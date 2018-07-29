@@ -30,3 +30,9 @@ https://www.unrealengine.com
 [Additional useful setup](Documentation/ADD_SETUP.md)
 
 [Perforce tips](Documentation/P4_TIPS.md)
+
+## Jenkins pipeline
+
+This is the core of the project: a serie of jenkins groovy script that allow you to automate task using UE4 like compilation, create package, Fill the Shared Derived data cache, etc.
+
+[jenkins pipeline](Pipelines/.)
