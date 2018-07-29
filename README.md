@@ -28,3 +28,5 @@ https://www.unrealengine.com
 [Engine and perforce setup](Documentation/SETUP.md)
 
 [Additional useful setup](Documentation/ADD_SETUP.md)
+
+[Perforce tips](Documentation/P4_TIPS.md)
