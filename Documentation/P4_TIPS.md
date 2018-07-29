@@ -10,7 +10,7 @@ In P4v, menu "Connection > Edit Current workspace > Advanced >", I find the foll
 	Rmdir
 	On submit "Don't submit unchanged files"
 
-Note that P4V will create a new workspace for every stream, so you will need to repeat those changes for every workspaces.
+Note that in the case you create a new workspace for every stream, you will need to repeat those changes for every workspaces.
 
 ## P4 client
 
