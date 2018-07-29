@@ -1,11 +1,10 @@
 # Setup
 
-Steps to have the engine, perforce and jenkins setup in order to run the jenkins pipelines of this project.
+This document describe steps to have the engine, perforce and jenkins setup in order to run the jenkins pipelines of this project.
 
 ## Preparation
 
-You will need a lot of disk space during that setup, at least 10GB. (This do not
-take in account space on the perforce server)
+You will need a lot of disk space during that setup, at least 10GB. (Without taking into account space on the perforce server)
 // TODO : update disk space taken by jenkins setup
 
 Setup a github account in order to be able to download a version of UE4:
@@ -32,6 +31,7 @@ to add any files to perforce.
 I also have a slighty different setup than the one describe in Epic documentation.
 
 You will need a perforce account with "Permission Level / Right" of level "admin"
+
     p4 -P YourPassword typemap
 
     binary+w //ue4jenkins/....exe
@@ -69,11 +69,14 @@ Note that I added the following types compare to Epic recommended setup:
     text //ue4jenkins/....xml
     binary //ue4jenkins/....png
 
-This command will not work properly with some text editor (for example notepad++). In that case you need to change the text editor used by p4 commands using the following command:
+This command will not work properly with some text editor (for example Notepad++). In that case you need to change the text editor used by p4 commands using the following command:
+
     p4 set P4EDITOR=C:\Windows\system32\notepad.exe
 
 You can change the file type of files afterward using the command
+
     p4 edit -t text+w ....modules
+
 The command above will change all .modules files in current folder and all sub folders to type "text+w"
 
 ## UE4 perforce streams setup
@@ -81,21 +84,21 @@ The command above will change all .modules files in current folder and all sub f
 The UE4 engine and UE4 projects will use the following setup:
 
 "//ue4jenkins/Epic" stream
-	Contains unmodified UE4 downloaded from Epic (Github or perforce)
-	This stream will be updated with each major and minor version of UE4
-	This will allow to merge the engine inside your perforce setup
-	This will also help your team to compare the default engine with your modified version
-	Only the jenkins user should have write access to this stream.
+- Contains unmodified UE4 downloaded from Epic (Github or perforce)
+- This stream will be updated with each major and minor version of UE4
+- This will allow to merge the engine inside your perforce setup
+- This will also help your team to compare the default engine with your modified version
+- Only the jenkins user should have write access to this stream.
 
 "//ue4jenkins/Trunk" stream	
-	UE4 use for your project(s)
+- Contains the modified UE4 which you use for your project(s)
 
 "//ue4jenkins/Branches/4.XX" stream	
-	Branches for merging new Epic version into your modified engine
+- Branches for merging new Epic version into your modified engine
 
 "//ue4jenkins/Project_A" stream
-	One of the project using the engine in trunk
-	Note that you could also directly add your project inside the trunk stream.
+- One of the project using the UE4 in the Trunk stream
+- Note that you could also directly add your project inside the trunk stream.
 
 ## Upload UE4 to perforce
 
@@ -119,13 +122,15 @@ In Visual Studio, compile "Development editor - Win64"
 
 In P4V, you can right click the Engine/Plugins folder and click "Open command window here"
 then use the following commands:
+
     p4 add ....modules
     p4 add ....pdb
     p4 add ....dll
 
 ## UE4 game compilation and upload to perforce
 
-After downloading the engine from perforce, each member of the team will need to register the engine
+After downloading the engine from perforce, each member of the team will need to register the engine.
+
 This is automaticly done with the "Setup.bat" present in UE4 but can also be called manually:
 
     .\Engine\Binaries\Win64\UnrealVersionSelector-Win64-Shipping.exe /register
