@@ -28,12 +28,39 @@ node
 		{
 			// We need to use double quote for batch path in case engine path contains space
 			// /D				Change drive at same time as current folder		
-			
+
 			// Generate Visual studio projects
 			bat """
 				cd /D \"${engineLocalPath}\\Engine\\Build\\BatchFiles\"
 				GenerateProjectFiles.bat -project=\"${projectLocalPath}\\${projectName}.uproject\" -game -rocket -progress
 				"""
+		}
+
+		def p4 = p4 credential: perforceCredentialInJenkins, workspace: staticSpec(charset: 'none', name: perforceWorkspaceName, pinHost: false)
+
+		stage('Checkout')
+		{
+			p4.run('edit', 
+						"${engineLocalPath}/Engine/Binaries/Win64/....exe".toString(),
+						"${engineLocalPath}/Engine/Binaries/Win64/....dll".toString(),
+						"${engineLocalPath}/Engine/Binaries/Win64/....pdb".toString(),
+						"${engineLocalPath}/Engine/Binaries/Win64/....target".toString(),
+						"${engineLocalPath}/Engine/Binaries/Win64/....modules".toString(),
+						"${engineLocalPath}/Engine/Binaries/Win64/....version".toString(),
+						"${engineLocalPath}/Engine/Binaries/DotNET/UnrealBuildTool.xml".toString(),
+						"${engineLocalPath}/Engine/Binaries/DotNET/UnrealBuildTool.exe.config".toString(),
+						"${engineLocalPath}/Engine/Plugins/.../Binaries/Win64/....dll".toString(),
+						"${engineLocalPath}/Engine/Plugins/.../Binaries/Win64/....modules".toString(),
+						"${projectLocalPath}/Binaries/Win64/....exe".toString(),
+						"${projectLocalPath}/Binaries/Win64/....dll".toString(),
+						"${projectLocalPath}/Binaries/Win64/....pdb".toString(),
+						"${projectLocalPath}/Binaries/Win64/....target".toString(),
+						"${projectLocalPath}/Binaries/Win64/....modules".toString(),
+						"${projectLocalPath}/Binaries/Win64/....version".toString(),
+						"${projectLocalPath}/Plugins/.../Binaries/Win64/....dll".toString(),
+						"${projectLocalPath}/Plugins/.../Binaries/Win64/....pdb".toString(),
+						"${projectLocalPath}/Plugins/.../Binaries/Win64/....modules".toString()
+				)
 		}
 
 		stage( 'Compile' )
@@ -44,6 +71,12 @@ node
 				cd /D \"${engineLocalPath}\\Engine\\Build\\BatchFiles\"
 				Build.bat ${projectName}Editor Win64 Development -Project=\"${projectLocalPath}\\${projectName}.uproject\"
 				"""
+		}
+
+		stage('Submit')
+		{
+		    // TODO: The P4 task will get aborted after 5 minutes !
+			// p4.run('submit', "-d "[ue4] ${env.JOB_NAME} ${env.BUILD_NUMBER}".toString())
 		}
 
 		slackSend color: 'good', message: "${env.JOB_NAME} ${env.BUILD_NUMBER} succeed (${env.BUILD_URL})"

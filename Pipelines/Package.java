@@ -33,9 +33,10 @@ node
 			def mapList = ""
 
 			// Package the game
+			// TODO : explains each options
 			bat """
 				cd /D \"${engineLocalPath}\\Engine\\Build\\BatchFiles\"
-				RunUAT.bat BuildCookRun -Project=\"${projectLocalPath}\\${projectName}.uproject\" -nocompileeditor -noP4  -package -build -compile -cook -stage -archive -archivedirectory=\"${archiveLocalPath}\" -clientconfig=${compilationTarget} -serverconfig=${compilationTarget} -targetplatform=${compilationPlatform} -map=${mapList} -unattended -buildmachine
+				RunUAT.bat BuildCookRun -Project=\"${projectLocalPath}\\${projectName}.uproject\" -nocompileeditor -noP4  -package -build -compile -cook -stage -archive -archivedirectory=\"${archiveLocalPath}\" -clientconfig=${compilationTarget} -serverconfig=${compilationTarget} -targetplatform=${compilationPlatform} -map=${mapList} -unattended -buildmachine -nocodesign
 				"""
 		}
 

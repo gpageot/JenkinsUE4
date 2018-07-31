@@ -4,8 +4,7 @@ This document describe steps to have the engine, perforce and jenkins setup in o
 
 ## Preparation
 
-You will need a lot of disk space during that setup, at least 10GB. (Without taking into account space on the perforce server)
-// TODO : update disk space taken by jenkins setup
+You will need a lot of disk space during that setup, at least 40GB for the engine files. (Without taking into account space on the perforce server, and your project(s) files)
 
 Setup a github account in order to be able to download a version of UE4:
 https://github.com/EpicGames/UnrealEngine
@@ -137,3 +136,36 @@ This is automaticly done with the "Setup.bat" present in UE4 but can also be cal
 
 After the engine is registered, and the project created, you can right click on the uproject file and select "Generate Visual Studio project files"
 
+## Perforce disk space
+
+If you are limited by the amount of disk space on your perforce server, you should limit the number of revisions of the binary files.
+
+To limit the number of revisions, you need to modify the filetype to add the "+Sn" option
+
+This can be automatize in a commands
+
+	p4 edit -t binary+wS10 ....dll
+
+Or ever better by changing the perforce "typemap", this way if any files is added, those will also get the revision limitation.
+
+    binary+wS10 //ue4jenkins/....exe
+    binary+wS10 //ue4jenkins/....dll
+    binary+wS10 //ue4jenkins/....lib
+    binary+wS10 //ue4jenkins/....pdb
+	binary+wS10 //ue4jenkins/....so
+	
+## Preparation for first packaging
+
+You will need to run a package locally first, as UE4 script will want to update files you usually don't changes
+
+Note that none of those file will be modified
+
+TODO : change filetype to "text+w" ?
+
+    Engine/Binaries/DotNET/IOS/....exe.config
+    Engine/Binaries/Win64/....target
+    Engine/Binaries/Win64/....modules
+    Engine/Binaries/Win64/....version
+    Engine/Plugins/....modules
+    Project/Binaries/....modules
+    Project/Plugins/Binaries/....modules
