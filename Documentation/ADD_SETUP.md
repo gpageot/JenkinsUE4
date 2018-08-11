@@ -33,3 +33,9 @@ Engine, project DDC, Shared DDC folder removed
 - First run: 2m30 seconds
 Engine, project DDC, removed
 - Second run: 30 seconds
+
+## Swarm agent
+
+### Setup
+Epic documentation:
+https://docs.unrealengine.com/en-us/Engine/Rendering/LightingAndShadows/Lightmass/Unreal-Swarm-Overview
