@@ -157,16 +157,4 @@ Or ever better by changing the perforce "typemap", this way if any files is adde
 	
 ## Preparation for first packaging
 
-You will need to run a package locally first, as UE4 script will want to update files you usually don't changes
-
-Note that none of those file will be modified
-
-TODO : change filetype to "text+w" ?
-
-    Engine/Binaries/DotNET/IOS/....exe.config
-    Engine/Binaries/Win64/....target
-    Engine/Binaries/Win64/....modules
-    Engine/Binaries/Win64/....version
-    Engine/Plugins/....modules
-    Project/Binaries/....modules
-    Project/Plugins/Binaries/....modules
+TODO
