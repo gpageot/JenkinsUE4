@@ -59,10 +59,11 @@ Note that I added the following types compare to Epic recommended setup:
     binary+l //ue4jenkins/....udk
     binary+w //ue4jenkins/....pdb
     binary+w //ue4jenkins/....so
-    text //ue4jenkins/....target
-    text //ue4jenkins/....modules
-    text //ue4jenkins/....exe.config
-    text //ue4jenkins/....target.xml
+	text+w //ue4jenkins/....target
+	text+w //ue4jenkins/....modules
+	text+w //ue4jenkins/....exe.config
+	text+w //ue4jenkins/....target.xml
+	text+w //ue4jenkins/....version
     text //ue4jenkins/....uplugin
     text //ue4jenkins/....uproject
     text //ue4jenkins/....xml
