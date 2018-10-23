@@ -10,18 +10,19 @@ node
 		//		//DEPOT_NAME/UE4/Trunk/...	//PerforceWorkspaceRoot/UE4/Trunk/...
 		//		//DEPOT_NAME/PROJECT_NAME/...	//PerforceWorkspaceRoot/UE4/Projects/PROJECT_NAME/...
 
-		def projectLocalPath = "D:\\Jenkins\\Workspace\\UE4\\Projects\\PROJECT_NAME"
-		def projectName = "PROJECT_NAME"
-		def engineLocalPath = "D:\\Jenkins\\Workspace\\UE4\\Trunk"
-		def perforceWorkspaceName = 'P4_WORKSPACE_NAME'
-		def perforceCredentialInJenkins = 'JENKINS_P4_CREDENTIAL'
+		def projectLocalPath = PROJECT_LOCAL_PATH
+		def projectName = PROJECT_NAME
+		def engineLocalPath = ENGINE_LOCAL_PATH
+		def perforceWorkspaceName = P4_WORKSPACE_NAME
+		def perforceCredentialInJenkins = JENKINS_P4_CREDENTIAL
+		def perforceUnicodeMode = P4_UNICODE_ENCODING
 
 		stage('Get perforce')
 		{
 			checkout perforce(
 					credential: perforceCredentialInJenkins,
 					populate: syncOnly(force: false, have: true, modtime: true, parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'], pin: '', quiet: true, revert: true),
-					workspace: staticSpec(charset: 'none', name: perforceWorkspaceName, pinHost: false))
+					workspace: staticSpec(charset: perforceUnicodeMode, name: perforceWorkspaceName, pinHost: false))
 		}
 
 		stage( 'Prepare' )
@@ -36,7 +37,7 @@ node
 				"""
 		}
 
-		def p4 = p4 credential: perforceCredentialInJenkins, workspace: staticSpec(charset: 'none', name: perforceWorkspaceName, pinHost: false)
+		def p4 = p4 credential: perforceCredentialInJenkins, workspace: staticSpec(charset: perforceUnicodeMode, name: perforceWorkspaceName, pinHost: false)
 
 		stage('Checkout')
 		{
