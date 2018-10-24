@@ -9,15 +9,11 @@ def cond_stage(name, execute, block) {
 
 def GetLastestSubmittedChangelistOfUser(p4cmdobj, UserName, ServerPath) {
 	def changes = p4cmdobj.run('changes', '-m', '1', '-s', 'submitted', '-u', UserName.toString(), "${ServerPath}".toString())
-	/*for(def item : changes) {
-			echo ("Item: " + item)
-			for (String key : item.keySet()) {
-			value = item.get(key)
-			echo ("Key: " + key + " Value: " + value)
-		} 
+
+	if(changes.length < 1)
+	{
+		return "0"
 	}
-	echo ("Latest changelist submitted by admin user is: " + changes[0]['change'])*/
-	// TODO: manage case where no changelist present
 	return changes[0]['change']
 }
 
@@ -64,7 +60,7 @@ node
 		def gitFolderPath = GITHUB_LOCAL_PATH
 		def gitServerURL = GITHUB_EPIC_SERVER_URL
 		def gitCredential = GITHUB_CREDENTIAL
-		def gitExePath = 'C:\\Program Files\\Git\\bin\\git.exe'
+		def gitExePath = GITHUB_EXE_PATH
 
 		def perforceEpicBranchFolderPath = P4_EPICBRANCH_LOCAL_PATH
 		def perforceEpicBranchServerPath = P4_EPICBRANCH_SERVER_PATH
@@ -101,8 +97,9 @@ node
 			def gitBranchName = "*/${majorVersion}"
 			
 			// 19MB/s - 24MB/s
-			bat """\"${gitExePath}\" clone --branch ${majorVersion} -v ${gitServerURL} ${gitFolderPath}"""
-			/*
+			// TODO: Problem here we need to manually login to git first !
+//			bat """\"${gitExePath}\" clone --branch ${gitBranchName} -v ${gitServerURL} ${gitFolderPath}"""
+
 			// 200KB/s - 500KB/s
 			// We need to use the checkout step in order to specify the path where to clone the depot
 			checkout changelog: false, poll: false,
@@ -116,7 +113,6 @@ node
 				userRemoteConfigs: [[
 					credentialsId: gitCredential,
 					url: gitServerURL]]]
-			*/
 		}
 
 		// We run the setup.bat before the copy in order that the copy process filter files/folders out
@@ -137,6 +133,7 @@ node
 					credential: perforceCredentialInJenkins,
 					populate: syncOnly(force: false, have: true, modtime: true, parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'], pin: '', quiet: true, revert: true),
 					workspace: staticSpec(charset: perforceUnicodeMode, name: perforceWorkspaceName, pinHost: false))
+			// If you have "Can't clobber writable file" issue here, make sure that the workspace was set with the clobber option ON
 		}
 
 		cond_stage( 'Delete local files', !debugSkipDeleteAndCopy )
@@ -172,8 +169,24 @@ node
 			// -e		Edit files: Find files in the client workspace that have been modified outside of Perforce, and open them for edit.
 			// -a		Add files: Find files in the client workspace that are not under Perforce control and open them for add.
 			// -d		Delete files: Find files missing from the client workspace, but present on the server; open these files for delete, but only if these files are in the user's have list.
-			p4.run('reconcile', '-e', '-a', '-d', "${perforceEpicBranchServerPath}/... ".toString())
-			//p4.run('reconcile', '-e', '-a', '-d', "\"${perforceEpicBranchsFolderPath}\\...\" ".toString())
+			//p4.run('reconcile', '-e', '-a', '-d', "${perforceEpicBranchServerPath}/... ".toString())
+			
+			// Getting error "ERROR: P4: Task Exception: com.perforce.p4java.exception.ConnectionException: java.net.SocketTimeoutException: Read timed out" here, so try to split in multiple commands
+			// in Perforce credential setting in jenkins, click "update" > "Advanced" > change "RPC_SOCKET_SO_TIMEOUT_NICK" to a bigger value, or even 0
+			p4.run('reconcile', '-e', '-a', '-d', "${perforceEpicBranchServerPath}/Engine/Source/... ".toString())
+			p4.run('reconcile', '-e', '-a', '-d', "${perforceEpicBranchServerPath}/Engine/Content/... ".toString())
+			p4.run('reconcile', '-e', '-a', '-d', "${perforceEpicBranchServerPath}/Engine/Extras/... ".toString())
+			p4.run('reconcile', '-e', '-a', '-d', "${perforceEpicBranchServerPath}/Engine/Plugins/... ".toString())
+			p4.run('reconcile', '-e', '-a', '-d', "${perforceEpicBranchServerPath}/Engine/Binaries/... ".toString())
+			p4.run('reconcile', '-e', '-a', '-d', "${perforceEpicBranchServerPath}/Engine/Build/... ".toString())
+			p4.run('reconcile', '-e', '-a', '-d', "${perforceEpicBranchServerPath}/Engine/Shaders/... ".toString())
+			p4.run('reconcile', '-e', '-a', '-d', "${perforceEpicBranchServerPath}/Engine/Config/... ".toString())
+			p4.run('reconcile', '-e', '-a', '-d', "${perforceEpicBranchServerPath}/Engine/Programs/... ".toString())
+			p4.run('reconcile', '-e', '-a', '-d', "${perforceEpicBranchServerPath}/Engine/* ".toString())
+			p4.run('reconcile', '-e', '-a', '-d', "${perforceEpicBranchServerPath}/FeaturePacks/... ".toString())
+			p4.run('reconcile', '-e', '-a', '-d', "${perforceEpicBranchServerPath}/Templates/... ".toString())
+			p4.run('reconcile', '-e', '-a', '-d', "${perforceEpicBranchServerPath}/Samples/... ".toString())
+			p4.run('reconcile', '-e', '-a', '-d', "${perforceEpicBranchServerPath}/* ".toString())
 		}
 
 		cond_stage( 'Submit to perforce', !debugSkipSubmit )
@@ -186,7 +199,7 @@ node
 		{
 			def labelView = "${perforceEpicBranchServerPath}/..."
 			changelistNumber = GetLastestSubmittedChangelistOfUser(p4, perforceUserName, labelView)
-			echo ("Latest changelist submitted by admin user is: " + changelistNumber)
+			echo ("Latest changelist submitted by user '" + perforceUserName + "' is: " + changelistNumber)
 
 			def labelName = "EPIC_UE${majorVersion}"
 			def labelOwner = "${perforceUserName}"

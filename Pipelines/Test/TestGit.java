@@ -3,6 +3,11 @@
 // Gregory Pageot
 // 2018-09-10
 
+// Need permission for:
+//
+// new java.io.File java.lang.String
+// deleteDir java.io.File
+// java.io.File mkdirs
 node
 {
 	def epicBranchName = GITHUB_BRANCH_NAME

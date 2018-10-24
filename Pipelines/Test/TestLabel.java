@@ -6,18 +6,15 @@
 // Need permission for:
 //
 // method org.jenkinsci.plugins.p4.groovy.P4Groovy fetch java.lang.String java.lang.String
+// method org.jenkinsci.plugins.p4.groovy.P4Groovy save java.lang.String java.util.Map
 def GetLastestSubmittedChangelistOfUser(p4cmdobj, UserName, ServerPath)
 {
 	def changes = p4cmdobj.run('changes', '-m', '1', '-s', 'submitted', '-u', UserName.toString(), "${ServerPath}".toString())
-	/*for(def item : changes) {
-			echo ("Item: " + item)
-			for (String key : item.keySet()) {
-			value = item.get(key)
-			echo ("Key: " + key + " Value: " + value)
-		} 
+
+	if(changes.length < 1)
+	{
+		return "0"
 	}
-	echo ("Latest changelist submitted by admin user is: " + changes[0]['change'])*/
-	// TODO: manage case where no changelist present
 	return changes[0]['change']
 }
 
@@ -38,7 +35,7 @@ node
 	{
 		def labelView = "${perforceEpicBranchServerPath}/..."
 		changelistNumber = GetLastestSubmittedChangelistOfUser(p4, perforceUserName, labelView)
-		echo ("Latest changelist submitted by admin user is: " + changelistNumber)
+		echo ("Latest changelist submitted by user '" + perforceUserName + "' is: " + changelistNumber)
 
 		def labelName = "EPIC_UE${majorVersion}"
 		def labelOwner = "${perforceUserName}"

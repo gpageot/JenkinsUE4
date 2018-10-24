@@ -155,6 +155,25 @@ Or ever better by changing the perforce "typemap", this way if any files is adde
     binary+wS10 //ue4jenkins/....pdb
 	binary+wS10 //ue4jenkins/....so
 	
-## Preparation for first packaging
+## Installation of pipelines in your Jenkins
 
-TODO
+I recommend to start by adding the following pipeline in order to make sure to have proper connection to git and your P4
+Test/TestP4.java
+Test/TestGit.java
+
+In Jenkins:
+- Select "New Item"
+- Enter "TestP4" as item name
+- Select pipeline
+- Click OK
+- Select the checkbox "This project is parameterized"
+- For each necessary paramater for that script select "Add Parameter" > "String Parameter" (Note that debug flag use to skip steps of pipelines are "Boolean Parameter")
+- In the pipeline > script section paste the content of the java file
+- Click Save
+
+Note: You may need to comment the slack related code if your note using that plugin
+
+For the replicate pipeline, make sure to create a P4 workspace with option "rmdir" and "clobber"
+
+For the replicate pipeline, in order to prevent p4 commands to timeout, make the following change to the p4 credential:
+in Perforce credential setting, click "update" > "Advanced" > change "RPC_SOCKET_SO_TIMEOUT_NICK" to 0
