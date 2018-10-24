@@ -158,8 +158,8 @@ Or ever better by changing the perforce "typemap", this way if any files is adde
 ## Installation of pipelines in your Jenkins
 
 I recommend to start by adding the following pipeline in order to make sure to have proper connection to git and your P4
-Test/TestP4.java
-Test/TestGit.java
+- Test/TestP4.java
+- Test/TestGit.java
 
 In Jenkins:
 - Select "New Item"
@@ -171,9 +171,9 @@ In Jenkins:
 - In the pipeline > script section paste the content of the java file
 - Click Save
 
-Note: You may need to comment the slack related code if your note using that plugin
+Note: You may need to comment the slack related code if you're not using that plugin
 
 For the replicate pipeline, make sure to create a P4 workspace with option "rmdir" and "clobber"
 
 For the replicate pipeline, in order to prevent p4 commands to timeout, make the following change to the p4 credential:
-in Perforce credential setting, click "update" > "Advanced" > change "RPC_SOCKET_SO_TIMEOUT_NICK" to 0
+- in Perforce credential setting, click "update" > "Advanced" > change "RPC_SOCKET_SO_TIMEOUT_NICK" to 0
