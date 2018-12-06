@@ -1,9 +1,9 @@
 # Jenkins UE4
-Documentation and jenkins pipeline for Epic's Unreal Engine 4
+Documentation and Jenkins pipeline for Epic's Unreal Engine 4
 
 ## Important Note
 This project is under development, no guaranty given.
-Do not use on projet without backup / source control !
+Do not use on project without backup / source control !
 
 ## Introduction
 
@@ -13,7 +13,7 @@ Using perforce 2018.2 as source control.
 
 A big part of this setup is only required for teams that will make modifications to UE4 source code.
 
-Part of this setup is done by downloading the engine directly from Epic's github, but note that it could be modified to be automatic and/or work with Epic's perforce version.
+Part of this setup is done by downloading the engine directly from Epic's GitHub, but note that it could be modified to be automatic and/or work with Epic's perforce version.
 
 ## Some links
 
@@ -33,6 +33,6 @@ https://www.unrealengine.com
 
 ## Jenkins pipeline
 
-This is the core of the project: a serie of jenkins groovy script that allow you to automate task using UE4 like compilation, create package, Fill the Shared Derived data cache, etc.
+This is the core of the project: a series of Jenkins groovy script that allow you to automate task using UE4 like compilation, create package, Fill the Shared Derived data cache, etc.
 
 [jenkins pipeline](Pipelines/.)

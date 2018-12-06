@@ -1,17 +1,17 @@
 # Setup
 
-This document describe steps to have the engine, perforce and jenkins setup in order to run the jenkins pipelines of this project.
+This document describe steps to have the engine, perforce and Jenkins setup in order to run the Jenkins pipelines of this project.
 
 ## Preparation
 
 You will need a lot of disk space during that setup, at least 40GB for the engine files. (Without taking into account space on the perforce server, and your project(s) files)
 
-Setup a github account in order to be able to download a version of UE4:
+Setup a GitHub account in order to be able to download a version of UE4:
 https://github.com/EpicGames/UnrealEngine
 
 Select the version of the engine you want to use and download the zip
 
-Unzip to your harddrive.
+Unzip to your hard-drive.
 
 Run Setup.bat (This will download around 5GB of additional data)
 
@@ -22,12 +22,12 @@ https://docs.unrealengine.com/en-us/Engine/Basics/SourceControl/Perforce
 
 This project will use perforce streams to manage the merge. But the same result can be implemented using branches.
 
-I recommend to create a specific user that only jenkins will use (As this user will have some special rights).
+I recommend to create a specific user that only Jenkins will use (As this user will have some special rights).
 
 It is really important to properly setup the perforce "typemap" before starting
 to add any files to perforce.
 
-I also have a slighty different setup than the one describe in Epic documentation.
+I also have a slightly different setup than the one describe in Epic documentation.
 
 You will need a perforce account with "Permission Level / Right" of level "admin"
 
@@ -84,11 +84,11 @@ The command above will change all .modules files in current folder and all sub f
 The UE4 engine and UE4 projects will use the following setup:
 
 "//ue4jenkins/Epic" stream
-- Contains unmodified UE4 downloaded from Epic (Github or perforce)
+- Contains unmodified UE4 downloaded from Epic (GitHub or Perforce)
 - This stream will be updated with each major and minor version of UE4
-- This will allow to merge the engine inside your perforce setup
+- This will allow to merge the engine inside your Perforce setup
 - This will also help your team to compare the default engine with your modified version
-- Only the jenkins user should have write access to this stream.
+- Only the Jenkins user should have write access to this stream.
 
 "//ue4jenkins/Trunk" stream	
 - Contains the modified UE4 which you use for your project(s)
@@ -131,7 +131,7 @@ then use the following commands:
 
 After downloading the engine from perforce, each member of the team will need to register the engine.
 
-This is automaticly done with the "Setup.bat" present in UE4 but can also be called manually:
+This is automatically done with the "Setup.bat" present in UE4 but can also be called manually:
 
     .\Engine\Binaries\Win64\UnrealVersionSelector-Win64-Shipping.exe /register
 
@@ -166,14 +166,16 @@ In Jenkins:
 - Enter "TestP4" as item name
 - Select pipeline
 - Click OK
-- Select the checkbox "This project is parameterized"
-- For each necessary paramater for that script select "Add Parameter" > "String Parameter" (Note that debug flag use to skip steps of pipelines are "Boolean Parameter")
+- Select the check-box "This project is parameterized"
+- For each necessary parameter for that script select "Add Parameter" > "String Parameter" (Note that debug flag use to skip steps of pipelines are "Boolean Parameter")
 - In the pipeline > script section paste the content of the java file
 - Click Save
 
 Note: You may need to comment the slack related code if you're not using that plugin
 
 For the replicate pipeline, make sure to create a P4 workspace with option "rmdir" and "clobber"
+
+TODO: workspace option screenshot
 
 For the replicate pipeline, in order to prevent p4 commands to timeout, make the following change to the p4 credential:
 - in Perforce credential setting, click "update" > "Advanced" > change "RPC_SOCKET_SO_TIMEOUT_NICK" to 0
