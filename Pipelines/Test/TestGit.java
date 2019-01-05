@@ -3,11 +3,14 @@
 // Gregory Pageot
 // 2018-09-10
 
+import org.apache.commons.io.FileUtils
+
 // Need permission for:
 //
 // new java.io.File java.lang.String
-// deleteDir java.io.File
-// java.io.File mkdirs
+// org.apache.commons.io.FileUtils cleanDirectory java.io.File
+// org.apache.commons.io.FileUtils forceMkdir java.io.File
+
 node
 {
 	def epicBranchName = GITHUB_BRANCH_NAME
@@ -19,8 +22,8 @@ node
 	{
 		// Remove all local files (but keep directory)
 		def destinationDirPath = new File(gitFolderPath)
-		destinationDirPath.deleteDir();
-		destinationDirPath.mkdirs();
+		FileUtils.forceMkdir(destinationDirPath)
+		FileUtils.cleanDirectory(destinationDirPath)
 	}
 
 	stage( 'Git test' )
