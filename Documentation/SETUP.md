@@ -62,6 +62,7 @@ Note that I added the following types compare to Epic recommended setup:
 	text+w //ue4jenkins/....target
 	text+w //ue4jenkins/....modules
 	text+w //ue4jenkins/....exe.config
+	text+w //ue4jenkins/....dll.config
 	text+w //ue4jenkins/....target.xml
 	text+w //ue4jenkins/....version
     text //ue4jenkins/....uplugin
@@ -78,6 +79,8 @@ You can change the file type of files afterward using the command
     p4 edit -t text+w ....modules
 
 The command above will change all .modules files in current folder and all sub folders to type "text+w"
+
+You also need to manually change the file type of "Engine\Binaries\DotNET\UnrealBuildTool.xml" to "text+w" as some Epic build script will try to edit it (Compilation, package, ...)
 
 ## UE4 perforce streams setup
 
