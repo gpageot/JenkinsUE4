@@ -3,63 +3,109 @@
 // Gregory Pageot
 // 2018-07-23
 
+def GetChangelistsDesc()
+{
+	if(currentBuild.changeSets.size() < 1)
+	{
+		return 'No Changes'
+	}
+
+	String checkoutReport = ""
+	for(def items : currentBuild.changeSets)
+	{
+		for(def item : items)
+		{
+			checkoutReport += "${item.getAuthor()} ${item.getChangeNumber()} \"${item.getMsg()}\"\n"
+		}
+	}
+	//	Set authors = currentBuild.changeSets.collect({ it.items.collect { it.author.toString() } })
+	//	Set uniqueAuthors = authors.unique()
+
+	return checkoutReport
+}
+
+def GetPreviousBuildStatusExceptAborted()
+{
+	def previousBuild = currentBuild.getPreviousBuild()
+	while(previousBuild != null)
+	{
+		def status = previousBuild.getResult().toString()
+		if(status != 'ABORTED')
+			return status
+
+		previousBuild = previousBuild.getPreviousBuild()
+	}
+	return 'unknown'
+}
+
 node
 {
 	try{
-		// Perforce workspace mapping
-		//		//DEPOT_NAME/UE4/Trunk/...	//PerforceWorkspaceRoot/UE4/Trunk/...
-		//		//DEPOT_NAME/PROJECT_NAME/...	//PerforceWorkspaceRoot/UE4/Projects/PROJECT_NAME/...
-
+		// Path to Jenkins local engine folder for the given perforce workspace
 		def engineLocalPath = ENGINE_LOCAL_PATH
-		def projectName = PROJECT_NAME
+		// Path to Jenkins local project folder for the given perforce workspace
 		def projectLocalPath = PROJECT_LOCAL_PATH
+		// Project Name
+		def projectName = PROJECT_NAME
+		// Name of the perforce workspace use by this pipeline
 		def perforceWorkspaceName = P4_WORKSPACE_NAME
-		def perforceWorkspaceNameProject = P4_WORKSPACE_NAME_PROJECT
+		// Jenkins credential ID to use the given perforce workspace
 		def perforceCredentialInJenkins = JENKINS_P4_CREDENTIAL
-		def archiveLocalPath = ARCHIVE_PATH
+		// Encoding for the given perforce workspace
+		def perforceUnicodeMode = P4_UNICODE_ENCODING
+		// 
+		def archiveLocalPathRoot = PROJECT_ARCHIVE_PATH
+		// ex "Development"
+		def compilationTarget = COMPILATION_TARGET
+		// 
+		def compilationPlatform = COMPILATION_PLATFORM
+		// 
+		def mapList = ""
 		
 		stage('Get perforce')
 		{
+			// Set quiet to false in order to have output
 			checkout perforce(
-				credential: perforceCredentialInJenkins,
-				populate: syncOnly(force: false, have: true, modtime: true, parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'], pin: '', quiet: true, revert: true),
-				workspace: staticSpec(charset: 'none', name: perforceWorkspaceName, pinHost: false)
-				)
-		}
-
-		stage('Get perforce(Project)')
-		{
-			if(perforceWorkspaceNameProject != "")
-			{
-				checkout perforce(
 					credential: perforceCredentialInJenkins,
-					populate: syncOnly(force: false, have: true, modtime: true, parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'], pin: '', quiet: true, revert: true),
-					workspace: staticSpec(charset: 'none', name: perforceWorkspaceNameProject, pinHost: false)
-					)
-				
-			}
+					populate: syncOnly(force: false, have: true, modtime: true, parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'], pin: '', quiet: false, revert: true),
+					workspace: staticSpec(charset: perforceUnicodeMode, name: perforceWorkspaceName, pinHost: false))
 		}
 
+		// Could be avoided with a '+w' P4 filetype
 		stage( 'Package' )
 		{
-			def compilationTarget = "Development"
-			def compilationPlatform = "Win64"
-			def mapList = ""
-
+			// TODO : check option -nocompileeditor
 			// Package the game
-			// TODO : explains each options
-			// WARNING : the file "Engine\Binaries\DotNET\UnrealBuildTool.xml" should have the filetype manually set to "text+w"
 			bat """
 				cd /D \"${engineLocalPath}\\Engine\\Build\\BatchFiles\"
-				RunUAT.bat BuildCookRun -Project=\"${projectLocalPath}\\${projectName}.uproject\" -nocompileeditor -noP4  -package -build -compile -cook -stage -archive -archivedirectory=\"${archiveLocalPath}\\Build${BUILD_NUMBER}\" -clientconfig=${compilationTarget} -serverconfig=${compilationTarget} -targetplatform=${compilationPlatform} -map=${mapList} -unattended -buildmachine -nocodesign
+				RunUAT.bat BuildCookRun -Project=\"${projectLocalPath}\\${projectName}.uproject\" -noP4 -package -build -compile -cook -stage -archive -archivedirectory=\"${archiveLocalPathRoot}\" -clientconfig=${compilationTarget} -serverconfig=${compilationTarget} -targetplatform=${compilationPlatform} -map=${mapList} -unattended -buildmachine -nocodesign
 				"""
 		}
 
-		slackSend color: 'good', message: "${env.JOB_NAME} ${env.BUILD_NUMBER} succeed (${env.BUILD_URL})"
+		stage( 'Zip' )// TODO : add pipeline option to skip ZIP
+		{
+			// Optional: Zip the package in order to speed up file transfer over network
+			def packageFolderName = compilationPlatform
+			if(compilationPlatform == "Win64")
+				packageFolderName = "WindowsNoEditor"
+
+			def packageLocalPath = "${archiveLocalPathRoot}\\${packageFolderName}"
+			def archiveZipLocalPath = "${archiveLocalPathRoot}\\${projectName}_${compilationTarget}_${compilationPlatform}_${env.BUILD_NUMBER}.zip"
+			zip dir: "${packageLocalPath}", glob: '', zipFile: "${archiveZipLocalPath}"
+		}
+
+		def previousBuildStatus = GetPreviousBuildStatusExceptAborted()
+		def previousBuildSucceed = (previousBuildStatus == 'SUCCESS')
+		def previousBuildFailed = previousBuildSucceed == false
+		def buildFixed = previousBuildFailed
+		slackSend color: 'good', message: "${buildFixed?'@here ':''}${env.JOB_NAME} ${env.BUILD_NUMBER} ${buildFixed?'fixed':'succeed'} (${env.BUILD_URL})"
 	}
 	catch (exception)
 	{
-		slackSend color: 'bad', message: "${env.JOB_NAME} ${env.BUILD_NUMBER} failed (${env.BUILD_URL})"
+		def previousBuildStatus = GetPreviousBuildStatusExceptAborted()
+		def previousBuildSucceed = (previousBuildStatus == 'SUCCESS')
+		def buildFirstFail = previousBuildSucceed
+		slackSend color: 'bad', message: "${buildFirstFail?'@here ':''}${env.JOB_NAME} ${env.BUILD_NUMBER} ${buildFirstFail?'failed':'still failing'} (${env.BUILD_URL})\n${buildFirstFail?GetChangelistsDesc():''}"
 		throw exception
 	}
 }
