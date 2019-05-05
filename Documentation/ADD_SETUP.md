@@ -13,7 +13,7 @@ In Projects/PROJECT_NAME/Config/DefaultEngine.ini add the line
 [DerivedDataBackendGraph]
 Shared=(Type=FileSystem, ReadOnly=false, Clean=false, Flush=false, DeleteUnused=true, UnusedFileAge=19, FoldersToClean=-1, Path=\\Server-FileServer\UE4JenkinsShare\DDC, EnvPathOverride=UE-SharedDataCachePath)
 
-Where \\Server-FileServer\UE4JenkinsShare\DDC is a network location with read-write access for your whole team
+Where \\\\Server-FileServer\UE4JenkinsShare\DDC is a network location with read-write access for your whole team
 
 ### Test results
 

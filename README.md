@@ -13,7 +13,8 @@ Using perforce 2018.2 as source control.
 
 A big part of this setup is only required for teams that will make modifications to UE4 source code.
 
-Part of this setup is done by downloading the engine directly from Epic's GitHub, but note that it could be modified to be automatic and/or work with Epic's perforce version.
+Part of this setup is done by downloading the engine directly from Epic's GitHub.
+Note that a work in progress pipeline allow to automaticly download the engine from Epic's github or Perforce and upload it to another Perforce(Replicate.java)
 
 ## Some links
 
