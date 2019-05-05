@@ -3,6 +3,23 @@
 // Gregory Pageot
 // 2018-07-23
 
+def GetListOfClientFile(P4CommandResult)
+{
+	String result = ""
+	for(def item : P4CommandResult)
+	{
+		for (String key : item.keySet())
+		{
+			if(key == 'clientFile')
+			{
+				value = item.get(key)
+				result += value + "\n"
+			}
+		}
+	}
+	return result
+}
+
 def GetChangelistsDesc()
 {
 	if(currentBuild.changeSets.size() < 1)
@@ -40,7 +57,8 @@ def GetPreviousBuildStatusExceptAborted()
 
 node
 {
-	try{
+	try
+	{
 		// Path to Jenkins local engine folder for the given perforce workspace
 		def engineLocalPath = ENGINE_LOCAL_PATH
 		// Path to Jenkins local project folder for the given perforce workspace
@@ -53,28 +71,50 @@ node
 		def perforceCredentialInJenkins = JENKINS_P4_CREDENTIAL
 		// Encoding for the given perforce workspace
 		def perforceUnicodeMode = P4_UNICODE_ENCODING
-		// 
+		// Local path where to upload the package
 		def archiveLocalPathRoot = PROJECT_ARCHIVE_PATH
-		// ex "Development"
+		// Compilation target for the package, example: "Development"
 		def compilationTarget = COMPILATION_TARGET
-		// 
+		// Compilation platform for the package, example: "Win64"
 		def compilationPlatform = COMPILATION_PLATFORM
-		// 
+		// List of maps to include in the package (Note that by default the engine will include some maps)
 		def mapList = ""
-		
+		// If not empty, will try to unshelve from perforce
+		def optionUnshelveCL = UNSHELVE_CHANGELIST
+
 		stage('Get perforce')
 		{
 			// Set quiet to false in order to have output
 			checkout perforce(
-					credential: perforceCredentialInJenkins,
-					populate: syncOnly(force: false, have: true, modtime: true, parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'], pin: '', quiet: false, revert: true),
-					workspace: staticSpec(charset: perforceUnicodeMode, name: perforceWorkspaceName, pinHost: false))
+				credential: perforceCredentialInJenkins,
+				populate: syncOnly(force: false, have: true, modtime: true, parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'], pin: '', quiet: false, revert: true),
+				workspace: staticSpec(charset: perforceUnicodeMode, name: perforceWorkspaceName, pinHost: false))
 		}
 
-		// Could be avoided with a '+w' P4 filetype
+		def p4 = p4 credential: perforceCredentialInJenkins, workspace: staticSpec(charset: perforceUnicodeMode, name: perforceWorkspaceName, pinHost: false)
+
+		stage( 'Prepare' )
+		{
+			// Edit files necessary for RunUAT batch
+			echo "edit AutomationTool.exe.config"
+			def editedFiles = p4.run('edit',
+				"${engineLocalPath}/Engine/Binaries/DotNET/AutomationTool.exe.config".toString()
+				)
+			echo GetListOfClientFile(editedFiles)
+
+			// If not empty, will unshelve given CL from perforce
+			if(optionUnshelveCL != "")
+			{
+				p4unshelve( 
+					credential: perforceCredentialInJenkins,
+					shelf: optionUnshelveCL, 
+					workspace: staticSpec(charset: perforceUnicodeMode, name: perforceWorkspaceName, pinHost: false))
+			}
+		}
+
 		stage( 'Package' )
 		{
-			// TODO : check option -nocompileeditor
+			//  -nocompileeditor
 			// Package the game
 			bat """
 				cd /D \"${engineLocalPath}\\Engine\\Build\\BatchFiles\"
@@ -82,16 +122,32 @@ node
 				"""
 		}
 
-		stage( 'Zip' )// TODO : add pipeline option to skip ZIP
+		stage( 'Zip' )
 		{
 			// Optional: Zip the package in order to speed up file transfer over network
 			def packageFolderName = compilationPlatform
 			if(compilationPlatform == "Win64")
+			{
 				packageFolderName = "WindowsNoEditor"
+			}
+
+			def optionalUnshelveCL = ""
+			if(optionUnshelveCL != "")
+			{
+				optionalUnshelveCL = "_${optionUnshelveCL}"
+			}
 
 			def packageLocalPath = "${archiveLocalPathRoot}\\${packageFolderName}"
-			def archiveZipLocalPath = "${archiveLocalPathRoot}\\${projectName}_${compilationTarget}_${compilationPlatform}_${env.BUILD_NUMBER}.zip"
+			def archiveZipLocalPath = "${archiveLocalPathRoot}\\${projectName}_${compilationTarget}_${compilationPlatform}_${env.BUILD_NUMBER}${optionalUnshelveCL}.zip"
 			zip dir: "${packageLocalPath}", glob: '', zipFile: "${archiveZipLocalPath}"
+		}
+
+		stage('Cleanup')
+		{
+			// Revert files checkout for package script (And optional unshelved CL)
+			echo "Revert //..."
+			def revertedFiles = p4.run('revert', '//...')
+			echo GetListOfClientFile(revertedFiles)
 		}
 
 		def previousBuildStatus = GetPreviousBuildStatusExceptAborted()
