@@ -34,6 +34,6 @@ https://www.unrealengine.com
 
 ## Jenkins pipeline
 
-This is the core of the project: a series of Jenkins groovy script that allow you to automate task using UE4 like compilation, create package, Fill the Shared Derived data cache, etc.
+This is the core of the project: a series of Jenkins groovy script that allow you to automate task using UE4 like compilation, package creation and upload to archive, Fill the Shared Derived data cache, etc.
 
 [jenkins pipeline](Pipelines/.)
