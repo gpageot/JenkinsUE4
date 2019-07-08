@@ -79,6 +79,8 @@ node
 		def compilationPlatform = COMPILATION_PLATFORM
 		// List of maps to include in the package (Note that by default the engine will include some maps)
 		def mapList = ""
+		// If true, will activate the 'pak' step of UE4 packaging
+		def packageUsePAK = PACKAGE_USE_PAK
 		// If not empty, will try to unshelve from perforce
 		def optionUnshelveCL = UNSHELVE_CHANGELIST
 
@@ -114,11 +116,17 @@ node
 
 		stage( 'Package' )
 		{
+			def packageOptions = ""
+			if(packageUsePAK)
+			{
+				packageOptions = "-pak"
+			}
+
 			//  -nocompileeditor
 			// Package the game
 			bat """
 				cd /D \"${engineLocalPath}\\Engine\\Build\\BatchFiles\"
-				RunUAT.bat BuildCookRun -Project=\"${projectLocalPath}\\${projectName}.uproject\" -noP4 -package -build -compile -cook -stage -archive -archivedirectory=\"${archiveLocalPathRoot}\" -clientconfig=${compilationTarget} -serverconfig=${compilationTarget} -targetplatform=${compilationPlatform} -map=${mapList} -unattended -buildmachine -nocodesign
+				RunUAT.bat BuildCookRun -Project=\"${projectLocalPath}\\${projectName}.uproject\" -noP4 -package -build -compile -cook -stage -archive ${packageOptions} -archivedirectory=\"${archiveLocalPathRoot}\" -clientconfig=${compilationTarget} -serverconfig=${compilationTarget} -targetplatform=${compilationPlatform} -map=${mapList} -unattended -buildmachine -nocodesign
 				"""
 		}
 
