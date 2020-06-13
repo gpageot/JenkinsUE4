@@ -2,6 +2,14 @@
 
 This document describe steps to have the engine, perforce and Jenkins setup in order to run the Jenkins pipelines of this project.
 
+A lot of this only apply if you want to be able to change the engine source code.
+
+In this setup the engine source code will also be uploaded to your perforce.
+
+But if you don't need to change the engine source, you can only upload your project to perforce, and directly use UE4 from the EpicGameLauncher. 
+
+In that case make sure to use the pipeline "CompileNoEngineMods"
+
 ## Preparation
 
 You will need a lot of disk space during that setup, at least 40GB for the engine files. (Without taking into account space on the perforce server, and your project(s) files)

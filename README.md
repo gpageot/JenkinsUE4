@@ -34,6 +34,10 @@ https://www.unrealengine.com
 
 ## Jenkins pipeline
 
+We recommend to first setup the "test" projects, then the "compile" and finally the "package" project. 
+
+As each of those pipeline are more complex and have more parameters than the next.
+
 This is the core of the project: a series of Jenkins groovy script that allow you to automate task using UE4 like compilation, package creation and upload to archive, Fill the Shared Derived data cache, etc.
 
 [jenkins pipeline](Pipelines/.)
