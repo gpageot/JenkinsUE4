@@ -14,6 +14,7 @@
 // P4_WORKSPACE_NAME: String
 // JENKINS_P4_CREDENTIAL: String
 // P4_UNICODE_ENCODING: String
+// FULL_REBUILD: Boolean
 // PROJECT_ARCHIVE_PATH: String
 // COMPILATION_TARGET: String
 // COMPILATION_PLATFORM: String
@@ -23,6 +24,10 @@
 // WARNING:
 // In order to have thje Zip step to work, you need to install the plugin:
 // "Pipeline Utility Steps"
+
+// Need permission for:
+//
+// org.codehaus.groovy.runtime.DefaultGroovyMethods deleteDir java.io.File
 
 // TODO: 
 // P4_LABEL_NAME: String
@@ -96,6 +101,8 @@ node
 		def perforceCredentialInJenkins = JENKINS_P4_CREDENTIAL
 		// Encoding for the given perforce workspace
 		def perforceUnicodeMode = P4_UNICODE_ENCODING
+		// If true, the perforce workspace will do a force clean
+		def optionFullRebuild = FULL_REBUILD.toBoolean()
 		// Local path where to upload the package
 		def archiveLocalPathRoot = PROJECT_ARCHIVE_PATH
 		// Compilation target for the package, example: "Development"
@@ -111,11 +118,27 @@ node
 
 		stage('Get perforce')
 		{
-			// Set quiet to false in order to have output
+			def populateOption
+			if(optionFullRebuild)
+			{
+				echo "delete directory ${projectLocalPath}"
+				def destinationDirPath = new File(projectLocalPath)
+				destinationDirPath.deleteDir();
+
+				// Currently failing with "ERROR: P4: Task Exception: java.io.IOException: Unable to delete directory [Perforce_Workspace_Folder]."
+				populateOption = forceClean(have: true, parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'], pin: '', quiet: true)
+			}
+			else
+			{
+				// Set quiet to false in order to have output
+				populateOption = syncOnly(force: false, have: true, modtime: true, parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'], pin: '', quiet: false, revert: true)
+			}
+
 			checkout perforce(
 				credential: perforceCredentialInJenkins,
-				populate: syncOnly(force: false, have: true, modtime: true, parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'], pin: '', quiet: false, revert: true),
-				workspace: staticSpec(charset: perforceUnicodeMode, name: perforceWorkspaceName, pinHost: false))
+				populate: populateOption,
+				workspace: staticSpec(charset: perforceUnicodeMode, name: perforceWorkspaceName, pinHost: false)
+				)
 		}
 
 		def p4 = p4 credential: perforceCredentialInJenkins, workspace: staticSpec(charset: perforceUnicodeMode, name: perforceWorkspaceName, pinHost: false)
