@@ -1,14 +1,13 @@
 #!groovy
 
 // Gregory Pageot
-// 2018-07-23
+// 2020-06-09
 // https://github.com/gpageot/JenkinsUE4
 // 
 // Brief:
-// Compile the project with a custom engine (Downloaded from Epic's GitHub or perforce)
+// Compile the project with a engine downloaded from Epic Game Launcher
 //
 // Jenkins job parameter:
-// ENGINE_ONLY: Boolean
 // ENGINE_LOCAL_PATH: String
 // PROJECT_LOCAL_PATH: String
 // PROJECT_NAME: String
@@ -18,7 +17,6 @@
 // P4_UNICODE_ENCODING: String
 // P4_FORCE_SYNC: Boolean
 // FULL_REBUILD: Boolean
-// SETUP_ENGINE: Boolean
 // P4_LABEL_NAME: String
 // P4_LABEL_DESC: String
 
@@ -93,8 +91,6 @@ def GetPreviousBuildStatusExceptAborted()
 
 node
 {
-	// If true, only the engine will be built
-	def engineOnly = ENGINE_ONLY.toBoolean()
 	// Path to Jenkins local engine folder for the given perforce workspace
 	def engineLocalPath = ENGINE_LOCAL_PATH
 	// Path to Jenkins local project folder for the given perforce workspace
@@ -113,8 +109,6 @@ node
 	def perforceForceSync = P4_FORCE_SYNC.toBoolean()
 	// If true, the perforce workspace will do a force clean
 	def optionFullRebuild = FULL_REBUILD.toBoolean()
-	// If true, the engine setup batch will be called
-	def setupEngine = SETUP_ENGINE.toBoolean()
 
 	def perforceLabelName = P4_LABEL_NAME
 	def perforceLabelDescription = P4_LABEL_DESC
@@ -145,99 +139,46 @@ node
 
 		stage( 'Prepare' )
 		{
-			// Edit files necessary for GenerateProjectFiles batch
-			echo "edit UnrealBuildTool.xml and UnrealBuildTool.exe.config"
-			def editedFiles = p4.run('edit', 
-				"${engineLocalPath}/Engine/Binaries/DotNET/UnrealBuildTool.xml".toString(),
-				"${engineLocalPath}/Engine/Binaries/DotNET/UnrealBuildTool.exe.config".toString()
-				)
-			echo GetListOfClientFile(editedFiles)
-
 			// We need to use double quote for batch path in case engine path contains space
 			// /D				Change drive at same time as current folder		
 
-			if(setupEngine)
-			{
-				// Need '--force' option as we can't manage prompt
-				// Note that here the dependencies are hard-coded for a minimal "Win64 Editor" build
-				bat """
-					cd /D \"${engineLocalPath}"
-					Setup.bat --force -exclude=WinRT -exclude=Linux -exclude=Linux32 -exclude=osx64 -exclude=IOS -exclude=HTML5 -exclude=android
-					"""
-			}
-
-			// Generate Visual studio projects
-			if(engineOnly)
-			{
-				bat """
-					cd /D \"${engineLocalPath}\\Engine\\Build\\BatchFiles\"
-					GenerateProjectFiles.bat -rocket -progress
-					"""
-			}
-			else
-			{
-				bat """
-					cd /D \"${engineLocalPath}\\Engine\\Build\\BatchFiles\"
-					GenerateProjectFiles.bat -project=\"${projectLocalPath}\\${projectName}.uproject\" -game -rocket -progress
-					"""
-			}
+			// Generate Visual studio projects ( Epic launcher version does not have GenerateProjectFiles.bat)
+			bat """
+				cd /D \"${engineLocalPath}\\Engine\\Binaries\\DotNET\\"
+				UnrealBuildTool.exe  -projectfiles -project=\"${projectLocalPath}\\${projectName}.uproject\" -game -rocket -progress
+			"""
 		}
 
 		// Unnecessary if we use p4publish and if '+w' P4 filetype flag is setup properly for all those files
 		stage('Checkout')
 		{
-			echo "edit engine binaries"
-			def editedFiles = p4.run('edit', 
-				"${engineLocalPath}/Engine/Binaries/Win64/....exe".toString(),
-				"${engineLocalPath}/Engine/Binaries/Win64/....dll".toString(),
-				"${engineLocalPath}/Engine/Binaries/Win64/....pdb".toString(),
-				"${engineLocalPath}/Engine/Binaries/Win64/....target".toString(),
-				"${engineLocalPath}/Engine/Binaries/Win64/....modules".toString(),
-				"${engineLocalPath}/Engine/Binaries/Win64/....version".toString(),
-				"${engineLocalPath}/Engine/Plugins/.../Binaries/Win64/....dll".toString(),
-				"${engineLocalPath}/Engine/Plugins/.../Binaries/Win64/....modules".toString()
+			echo "edit project binaries"
+			editedFiles = p4.run('edit', 
+				"${projectLocalPath}/${projectName}.uproject".toString(),
+				"${projectLocalPath}/Binaries/Win64/....exe".toString(),
+				"${projectLocalPath}/Binaries/Win64/....dll".toString(),
+				"${projectLocalPath}/Binaries/Win64/....pdb".toString(),
+				"${projectLocalPath}/Binaries/Win64/....target".toString(),
+				"${projectLocalPath}/Binaries/Win64/....modules".toString(),
+				"${projectLocalPath}/Binaries/Win64/....version".toString(),
+				"${projectLocalPath}/Plugins/.../Binaries/Win64/....dll".toString(),
+				"${projectLocalPath}/Plugins/.../Binaries/Win64/....pdb".toString(),
+				"${projectLocalPath}/Plugins/.../Binaries/Win64/....modules".toString()
 				)
 
 			echo GetListOfClientFile(editedFiles)
-
-			if(engineOnly == false)
-			{
-				echo "edit project binaries"
-				editedFiles = p4.run('edit', 
-					"${projectLocalPath}/${projectName}.uproject".toString(),
-					"${projectLocalPath}/Binaries/Win64/....exe".toString(),
-					"${projectLocalPath}/Binaries/Win64/....dll".toString(),
-					"${projectLocalPath}/Binaries/Win64/....pdb".toString(),
-					"${projectLocalPath}/Binaries/Win64/....target".toString(),
-					"${projectLocalPath}/Binaries/Win64/....modules".toString(),
-					"${projectLocalPath}/Binaries/Win64/....version".toString(),
-					"${projectLocalPath}/Plugins/.../Binaries/Win64/....dll".toString(),
-					"${projectLocalPath}/Plugins/.../Binaries/Win64/....pdb".toString(),
-					"${projectLocalPath}/Plugins/.../Binaries/Win64/....modules".toString()
-					)
-
-				echo GetListOfClientFile(editedFiles)
-			}
 		}
 
 		stage( 'Compile' )
 		{
 			// Compile the game
 			// Same as Visual studio NMake
-			if(engineOnly)
-			{
-				bat """
-					cd /D \"${engineLocalPath}\\Engine\\Build\\BatchFiles\"
-					Build.bat UE4Editor Win64 Development
-					"""
-			}
-			else
-			{
-				bat """
-					cd /D \"${engineLocalPath}\\Engine\\Build\\BatchFiles\"
-					Build.bat ${projectName}Editor Win64 Development -Project=\"${projectLocalPath}\\${projectName}.uproject\"
-					"""
-			}
+			// Rocket build
+			// https://blog.mi.hdm-stuttgart.de/index.php/2017/02/11/uat-automation/
+			bat """
+				cd /D \"${engineLocalPath}\\Engine\\Build\\BatchFiles\"
+				Build.bat ${projectName}Editor Win64 Development -Project=\"${projectLocalPath}\\${projectName}.uproject\"
+				"""
 		}
 
 		stage('Submit')
@@ -265,14 +206,14 @@ node
 		def previousBuildSucceed = (previousBuildStatus == 'SUCCESS')
 		def previousBuildFailed = previousBuildSucceed == false
 		def buildFixed = previousBuildFailed
-		slackSend color: 'good', message: "${buildFixed?'@here ':''}${env.JOB_NAME} ${env.BUILD_NUMBER} ${engineOnly?'':projectName} ${optionFullRebuild?'rebuild ':''}${buildFixed?'fixed':'succeed'} (${env.BUILD_URL})"
+		slackSend color: 'good', message: "${buildFixed?'@here ':''}${env.JOB_NAME} ${env.BUILD_NUMBER} ${projectName} ${optionFullRebuild?'rebuild ':''}${buildFixed?'fixed':'succeed'} (${env.BUILD_URL})"
 	}
 	catch (exception)
 	{
 		def previousBuildStatus = GetPreviousBuildStatusExceptAborted()
 		def previousBuildSucceed = (previousBuildStatus == 'SUCCESS')
 		def buildFirstFail = previousBuildSucceed
-		slackSend color: 'bad', message: "${buildFirstFail?'@here ':''}${env.JOB_NAME} ${env.BUILD_NUMBER} ${engineOnly?"":projectName} ${optionFullRebuild?'rebuild ':'	'}${buildFirstFail?'failed':'still failing'} (${env.BUILD_URL})\n${buildFirstFail?GetChangelistsDesc():''}"
+		slackSend color: 'bad', message: "${buildFirstFail?'@here ':''}${env.JOB_NAME} ${env.BUILD_NUMBER} ${projectName} ${optionFullRebuild?'rebuild ':'	'}${buildFirstFail?'failed':'still failing'} (${env.BUILD_URL})\n${buildFirstFail?GetChangelistsDesc():''}"
 		throw exception
 	}
 }

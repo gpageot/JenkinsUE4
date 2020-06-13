@@ -2,6 +2,20 @@
 
 // Gregory Pageot
 // 2018-09-10
+// https://github.com/gpageot/JenkinsUE4
+// 
+// Brief:
+// Test connection to Epic Git repository using your github credential
+//
+// Jenkins job parameter:
+// GITHUB_BRANCH_NAME: String			Which engine version you are using, ex: "4.24"
+// GITHUB_LOCAL_PATH: String			Local path where to pull git to, ex: "D:\JenkinsUE4\EpicGit"
+// GITHUB_EPIC_SERVER_URL: String		Epic github URL for UnrealEngine, ex: "https://github.com/EpicGames/UnrealEngine.git"
+// GITHUB_CREDENTIAL: String			Add a credential with: Credentials > Jenkin (Global) > Global credentials > Add Credentials > User name with password
+// CLEAN_BEFORE_GET: Boolean			If true, the local folder will be erase first
+//
+// WARNING:
+// Git.exe need to be install in the system running this script
 
 import org.apache.commons.io.FileUtils
 
@@ -17,13 +31,17 @@ node
 	def gitFolderPath = GITHUB_LOCAL_PATH
 	def gitServerURL = GITHUB_EPIC_SERVER_URL
 	def gitCredential = GITHUB_CREDENTIAL
+	def optionCleanBeforeGet = CLEAN_BEFORE_GET.toBoolean()
 
 	stage( 'Clean up git directory' )
 	{
-		// Remove all local files (but keep directory)
-		def destinationDirPath = new File(gitFolderPath)
-		FileUtils.forceMkdir(destinationDirPath)
-		FileUtils.cleanDirectory(destinationDirPath)
+		if(optionCleanBeforeGet == false)
+		{
+			// Remove all local files (but keep directory)
+			def destinationDirPath = new File(gitFolderPath)
+			FileUtils.forceMkdir(destinationDirPath)
+			FileUtils.cleanDirectory(destinationDirPath)
+		}
 	}
 
 	stage( 'Git test' )

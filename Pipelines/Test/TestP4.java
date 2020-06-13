@@ -2,6 +2,18 @@
 
 // Gregory Pageot
 // 2018-10-22
+// https://github.com/gpageot/JenkinsUE4
+// 
+// Brief:
+// Test connection to your local perforce server using credential you prepared for jenkins
+//
+// Jenkins job parameter:
+// P4_WORKSPACE_NAME: String			Name of the perforce workspace use buy this job, need to be made in advance
+// JENKINS_P4_CREDENTIAL: String		Add a credential with: Credentials > Jenkin (Global) > Global credentials > Add Credentials > Perforce Password Credential
+// P4_UNICODE_ENCODING: String			If server if not set to support unicode, set it to "auto"
+//
+// WARNING:
+// P4 plugin need to be installed
 
 node
 {

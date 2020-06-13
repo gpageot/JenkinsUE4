@@ -2,6 +2,31 @@
 
 // Gregory Pageot
 // 2018-07-23
+// https://github.com/gpageot/JenkinsUE4
+// 
+// Brief:
+// Package the project
+//
+// Jenkins job parameter:
+// ENGINE_LOCAL_PATH: String
+// PROJECT_LOCAL_PATH: String
+// PROJECT_NAME: String
+// P4_WORKSPACE_NAME: String
+// JENKINS_P4_CREDENTIAL: String
+// P4_UNICODE_ENCODING: String
+// PROJECT_ARCHIVE_PATH: String
+// COMPILATION_TARGET: String
+// COMPILATION_PLATFORM: String
+// PACKAGE_USE_PAK: Boolean
+// UNSHELVE_CHANGELIST: String
+
+// WARNING:
+// In order to have thje Zip step to work, you need to install the plugin:
+// "Pipeline Utility Steps"
+
+// TODO: 
+// P4_LABEL_NAME: String
+// P4_LABEL_DESC: String
 
 def GetListOfClientFile(P4CommandResult)
 {
@@ -80,7 +105,7 @@ node
 		// List of maps to include in the package (Note that by default the engine will include some maps)
 		def mapList = ""
 		// If true, will activate the 'pak' step of UE4 packaging
-		def packageUsePAK = PACKAGE_USE_PAK
+		def packageUsePAK = PACKAGE_USE_PAK.toBoolean()
 		// If not empty, will try to unshelve from perforce
 		def optionUnshelveCL = UNSHELVE_CHANGELIST
 
@@ -147,6 +172,8 @@ node
 
 			def packageLocalPath = "${archiveLocalPathRoot}\\${packageFolderName}"
 			def archiveZipLocalPath = "${archiveLocalPathRoot}\\${projectName}_${compilationTarget}_${compilationPlatform}_${env.BUILD_NUMBER}${optionalUnshelveCL}.zip"
+
+			echo "Zipping to: ${archiveZipLocalPath}"
 			zip dir: "${packageLocalPath}", glob: '', zipFile: "${archiveZipLocalPath}"
 		}
 
