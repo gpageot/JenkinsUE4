@@ -190,3 +190,5 @@ TODO: workspace option screenshot
 
 For the replicate pipeline, in order to prevent p4 commands to timeout, make the following change to the p4 credential:
 - in Perforce credential setting, click "update" > "Advanced" > change "RPC_SOCKET_SO_TIMEOUT_NICK" to 0
+
+In case of P4 error "Can't clobber writable file" you may want to considerate to set the option "clobber" ON for the P4 workspace that jenkins use
