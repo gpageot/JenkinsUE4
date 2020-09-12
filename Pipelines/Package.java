@@ -116,6 +116,12 @@ node
 		// If not empty, will try to unshelve from perforce
 		def optionUnshelveCL = UNSHELVE_CHANGELIST
 
+		def packageFolderName = compilationPlatform
+		if(compilationPlatform == "Win64")
+		{
+			packageFolderName = "WindowsNoEditor"
+		}
+
 		stage('Get perforce')
 		{
 			def populateOption
@@ -124,6 +130,10 @@ node
 				echo "delete directory ${projectLocalPath}"
 				def destinationDirPath = new File(projectLocalPath)
 				destinationDirPath.deleteDir();
+
+				echo "delete directory ${archiveLocalPathRoot}\\${packageFolderName}"
+				def archiveDirPath = new File(archiveLocalPathRoot + "\\" + packageFolderName)
+				archiveDirPath.deleteDir();
 
 				// Currently failing with "ERROR: P4: Task Exception: java.io.IOException: Unable to delete directory [Perforce_Workspace_Folder]."
 				populateOption = forceClean(have: true, parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'], pin: '', quiet: true)
@@ -181,11 +191,6 @@ node
 		stage( 'Zip' )
 		{
 			// Optional: Zip the package in order to speed up file transfer over network
-			def packageFolderName = compilationPlatform
-			if(compilationPlatform == "Win64")
-			{
-				packageFolderName = "WindowsNoEditor"
-			}
 
 			def optionalUnshelveCL = ""
 			if(optionUnshelveCL != "")
