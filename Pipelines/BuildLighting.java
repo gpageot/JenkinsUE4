@@ -139,7 +139,7 @@ node
 				"""*/
 			def result = bat """
 				cd /D \"${engineLocalPath}\\Engine\\Binaries\\Win64\"
-				UE4Editor-Cmd.exe \"${projectLocalPath}\\${projectName}.uproject\" ${mapName} -run=resavepackages -AllowCommandletRendering -buildlighting -quality=${lightingQuality} UseSCC=false -unattended -buildmachine
+				UE4Editor-Cmd.exe \"${projectLocalPath}\\${projectName}.uproject\" -map=${mapName} -run=resavepackages -AllowCommandletRendering -buildlighting -quality=${lightingQuality} UseSCC=false -unattended -buildmachine
 				"""
 			echo "Build command result:"
 			echo result
