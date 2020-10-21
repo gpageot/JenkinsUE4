@@ -122,7 +122,7 @@ node
 			// Edit files necessary for RunUAT batch
 			echo "edit ${projectLocalPath}/${mapFolderCheckout}"
 			def editedFiles = p4.run('edit',
-				"${projectLocalPath}/Content/${mapFolderCheckout}/...".toString()
+				"${projectLocalPath}/${mapFolderCheckout}/...".toString()
 				)
 			echo GetListOfClientFile(editedFiles)
 		}
@@ -134,7 +134,7 @@ node
 			// Run the command
 			def result = bat """
 				cd /D \"${engineLocalPath}\\Engine\\Binaries\\Win64\"
-				UE4Editor-Cmd.exe \"${projectLocalPath}\\${projectName}.uproject\" ${mapName} -ExecCmds=\"BUILDPATHS,OBJ SAVEPACKAGE PACKAGE=/Game/${mapFolderCheckout}/${mapName} FILE=${projectLocalPath}/Content/${mapFolderCheckout}/${mapName}.umap SILENT=true AUTOSAVING=false KEEPDIRTY=false,QUIT_EDITOR" UseSCC=false -unattended
+				UE4Editor-Cmd.exe \"${projectLocalPath}\\${projectName}.uproject\" ${mapName} -AutomatedMapBuild UseSCC=false -unattended -buildmachine
 				"""
 			echo "Build command result:"
 			echo result
