@@ -14,6 +14,8 @@
 // P4_WORKSPACE_NAME: String
 // JENKINS_P4_CREDENTIAL: String
 // P4_UNICODE_ENCODING: String
+// SLACK_CHANNEL: String
+//
 // FULL_REBUILD: Boolean
 // PROJECT_ARCHIVE_PATH: String
 // COMPILATION_TARGET: String
@@ -101,6 +103,9 @@ node
 		def perforceCredentialInJenkins = JENKINS_P4_CREDENTIAL
 		// Encoding for the given perforce workspace
 		def perforceUnicodeMode = P4_UNICODE_ENCODING
+		// If not empty, specify which slack channel is use to send message, should start with '#'
+		def optionSlackChannel = SLACK_CHANNEL
+
 		// If true, the perforce workspace will do a force clean
 		def optionFullRebuild = FULL_REBUILD.toBoolean()
 		// Local path where to upload the package
@@ -217,14 +222,32 @@ node
 		def previousBuildSucceed = (previousBuildStatus == 'SUCCESS')
 		def previousBuildFailed = previousBuildSucceed == false
 		def buildFixed = previousBuildFailed
-		slackSend color: 'good', message: "${buildFixed?'@here ':''}${env.JOB_NAME} ${env.BUILD_NUMBER} ${buildFixed?'fixed':'succeed'} (${env.BUILD_URL})"
+
+		def slackMessage = "${buildFixed?'@here ':''}${env.JOB_NAME} ${env.BUILD_NUMBER} ${buildFixed?'fixed':'succeed'} (${env.BUILD_URL})"
+		if(optionSlackChannel != "")
+		{
+			slackSend channel: optionSlackChannel, color: 'good', message: slackMessage
+		}
+		else
+		{
+			slackSend color: 'good', message: slackMessage
+		}
 	}
 	catch (exception)
 	{
 		def previousBuildStatus = GetPreviousBuildStatusExceptAborted()
 		def previousBuildSucceed = (previousBuildStatus == 'SUCCESS')
 		def buildFirstFail = previousBuildSucceed
-		slackSend color: 'bad', message: "${buildFirstFail?'@here ':''}${env.JOB_NAME} ${env.BUILD_NUMBER} ${buildFirstFail?'failed':'still failing'} (${env.BUILD_URL})\n${buildFirstFail?GetChangelistsDesc():''}"
+
+		def slackMessage = "${buildFirstFail?'@here ':''}${env.JOB_NAME} ${env.BUILD_NUMBER} ${buildFirstFail?'failed':'still failing'} (${env.BUILD_URL})\n${buildFirstFail?GetChangelistsDesc():''}"
+		if(optionSlackChannel != "")
+		{
+			slackSend channel: optionSlackChannel, color: 'bad', message: slackMessage
+		}
+		else
+		{
+			slackSend color: 'bad', message: slackMessage
+		}
 		throw exception
 	}
 }
