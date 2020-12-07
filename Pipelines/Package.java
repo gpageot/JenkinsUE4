@@ -207,7 +207,8 @@ node
 			def archiveZipLocalPath = "${archiveLocalPathRoot}\\${projectName}_${compilationTarget}_${compilationPlatform}_${env.BUILD_NUMBER}${optionalUnshelveCL}.zip"
 
 			echo "Zipping to: ${archiveZipLocalPath}"
-			zip dir: "${packageLocalPath}", glob: '', zipFile: "${archiveZipLocalPath}"
+			// If ZIP does not work, make sure to have plugin "Pipeline Utility Steps"
+		    zip dir: "${packageLocalPath}", glob: '', zipFile: "${archiveZipLocalPath}"
 		}
 
 		stage('Cleanup')
