@@ -165,12 +165,32 @@ Or ever better by changing the perforce "typemap", this way if any files is adde
     binary+wS10 //ue4jenkins/....lib
     binary+wS10 //ue4jenkins/....pdb
 	binary+wS10 //ue4jenkins/....so
-	
+		
+## Jenkins Jenkins
+
+Download and install java (for our test we used JDK 21)
+Create a user on your computer for jenkins, give it "Service Logon Credentials"
+Download and install jenkins
+In a browser finish your jenkins setup (Usually at http://localhost:8080/)
+If you want to change your jenkins language, you can install the plugin "Locale"
+
+
+Install "perforce" plugin
+It's probably a good time to add your perforce creddential
+Manage jenkins > Credentials > Jenkin (Global) > Global credentials > Add Credentials > Perforce Password Credential
+
+Setup slack integration
+Install "slack notification" plugin
+Setup the jenkins integration, see https://plugins.jenkins.io/slack/
+
 ## Installation of pipelines in your Jenkins
 
 I recommend to start by adding the following pipeline in order to make sure to have proper connection to git and your P4
+- Test/TestSlack.java
 - Test/TestP4.java
+	Note that for parameter P4_UNICODE_ENCODING, "utf8" is utf8 no bom encoding
 - Test/TestGit.java
+	This can be skipped if you  don't plan on setting the git replication pipelines at first
 
 In Jenkins:
 - Select "New Item"
@@ -182,7 +202,7 @@ In Jenkins:
 - In the pipeline > script section paste the content of the java file
 - Click Save
 
-Note: You may need to comment the slack related code if you're not using that plugin
+Note: You may need to comment the Slack related code if you're not using that plugin
 
 For the replicate pipeline, make sure to create a P4 workspace with option "rmdir" and "clobber"
 

@@ -14,6 +14,7 @@
 //
 // WARNING:
 // P4 plugin need to be installed
+// slack plugin need to be installed
 
 node
 {
@@ -29,11 +30,12 @@ node
 			echo "credential : ${perforceCredentialInJenkins}"
 			echo "encoding : ${perforceUnicodeMode}"
 
-			// Using autoClean here in order to make sure to clean the folder first			
+			// Use autoClean here in order to make sure to clean the folder first			
+			// Use syncOnly for quick test and avoid java heap space issue			
 			checkout perforce(
 					credential: perforceCredentialInJenkins,
-					//populate: syncOnly(force: false, have: true, modtime: true, parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'], pin: '', quiet: true, revert: true),
-					populate: autoClean(delete: true, modtime: false, parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'], pin: '', quiet: true, replace: true, tidy: false),
+					populate: syncOnly(force: false, have: true, modtime: true, parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'], pin: '', quiet: true, revert: true),
+					//populate: autoClean(delete: true, modtime: false, parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'], pin: '', quiet: true, replace: true, tidy: false),
 					workspace: staticSpec(charset: perforceUnicodeMode, name: perforceWorkspaceName, pinHost: false))
 		}
 
