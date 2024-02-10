@@ -166,14 +166,13 @@ Or ever better by changing the perforce "typemap", this way if any files is adde
     binary+wS10 //ue4jenkins/....pdb
 	binary+wS10 //ue4jenkins/....so
 		
-## Jenkins Jenkins
+## Install Jenkins
 
 Download and install java (for our test we used JDK 21)
 Create a user on your computer for jenkins, give it "Service Logon Credentials"
 Download and install jenkins
 In a browser finish your jenkins setup (Usually at http://localhost:8080/)
 If you want to change your jenkins language, you can install the plugin "Locale"
-
 
 Install "perforce" plugin
 It's probably a good time to add your perforce creddential
@@ -182,6 +181,16 @@ Manage jenkins > Credentials > Jenkin (Global) > Global credentials > Add Creden
 Setup slack integration
 Install "slack notification" plugin
 Setup the jenkins integration, see https://plugins.jenkins.io/slack/
+
+## Install Jenkins
+
+Create a second user for your staff to be able to see result
+Manage jenkins > Manage users > Create user
+
+Set permissions
+Manage jenkins > Security > Authorization > Matrix based security
+For overall, set read
+For job, set build, cancel, read
 
 ## Initial installation of pipelines in your Jenkins
 

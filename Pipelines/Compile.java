@@ -24,8 +24,7 @@
 // P4_LABEL_DESC: String							Description of the label added on successful compilation
 
 
-// TODO: Add to P4 tips: If you don7t see the virtual stream you are creating, make sure you have the right to yout mail steam root folder
-
+// TODO: Add to P4 tips: If you don't see the virtual stream you are creating, make sure you have the right to your main stream root folder
 
 // Need permission for:
 // 
