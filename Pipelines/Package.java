@@ -8,23 +8,23 @@
 // Package the project
 //
 // Jenkins job parameter:
-// ENGINE_LOCAL_PATH: String
-// PROJECT_LOCAL_PATH: String
-// PROJECT_NAME: String
-// P4_WORKSPACE_NAME: String
-// JENKINS_P4_CREDENTIAL: String
-// P4_UNICODE_ENCODING: String
-// SLACK_CHANNEL: String
+// ENGINE_LOCAL_PATH: String						Path to Jenkins local engine folder for the given perforce workspace
+// PROJECT_LOCAL_PATH: String						Path to Jenkins local project folder for the given perforce workspace
+// PROJECT_NAME: String								Project Name
+// P4_WORKSPACE_NAME: String						Name of the perforce workspace use buy this job, need to be made in advance
+// JENKINS_P4_CREDENTIAL: String					Add a credential with: Credentials > Jenkin (Global) > Global credentials > Add Credentials > Perforce Password Credential
+// P4_UNICODE_ENCODING: String						If server if not set to support unicode, set it to "auto"
+// SLACK_CHANNEL: String							Optional: slack channel name
 //
-// FULL_REBUILD: Boolean
+// FULL_REBUILD: Boolean							If true, the perforce workspace will do a force clean
 // PROJECT_ARCHIVE_PATH: String
-// COMPILATION_TARGET: String
-// COMPILATION_PLATFORM: String
+// COMPILATION_TARGET: Choice(Development, Test)
+// COMPILATION_PLATFORM: Choice( Win64)
 // PACKAGE_USE_PAK: Boolean
-// UNSHELVE_CHANGELIST: String
+// UNSHELVE_CHANGELIST: String						Optional: ID of a shelve changelist to include in the build
 
 // WARNING:
-// In order to have thje Zip step to work, you need to install the plugin:
+// In order to have the Zip step to work, you need to install the plugin:
 // "Pipeline Utility Steps"
 
 // Need permission for:
@@ -89,39 +89,40 @@ def GetPreviousBuildStatusExceptAborted()
 
 node
 {
+	// Path to Jenkins local engine folder for the given perforce workspace
+	def engineLocalPath = ENGINE_LOCAL_PATH
+	// Path to Jenkins local project folder for the given perforce workspace
+	def projectLocalPath = PROJECT_LOCAL_PATH
+	// Project Name
+	def projectName = PROJECT_NAME
+	// Name of the perforce workspace use by this pipeline
+	def perforceWorkspaceName = P4_WORKSPACE_NAME
+	// Jenkins credential ID to use the given perforce workspace
+	def perforceCredentialInJenkins = JENKINS_P4_CREDENTIAL
+	// Encoding for the given perforce workspace
+	def perforceUnicodeMode = P4_UNICODE_ENCODING
+
+	// If not empty, specify which slack channel is use to send message, should start with '#'
+	def optionSlackChannel = SLACK_CHANNEL
+
+	// If true, the perforce workspace will do a force clean
+	def optionFullRebuild = FULL_REBUILD.toBoolean()
+	// Local path where to upload the package
+	def archiveLocalPathRoot = PROJECT_ARCHIVE_PATH
+	// Compilation target for the package, example: "Development"
+	def compilationTarget = COMPILATION_TARGET
+	// Compilation platform for the package, example: "Win64"
+	def compilationPlatform = COMPILATION_PLATFORM
+	// List of maps to include in the package (Note that by default the engine will include some maps)
+	def mapList = ""
+	// If true, will activate the 'pak' step of UE4 packaging
+	def packageUsePAK = PACKAGE_USE_PAK.toBoolean()
+	// If not empty, will try to unshelve from perforce
+	def optionUnshelveCL = UNSHELVE_CHANGELIST
+
+	def packageFolderName = compilationPlatform
 	try
 	{
-		// Path to Jenkins local engine folder for the given perforce workspace
-		def engineLocalPath = ENGINE_LOCAL_PATH
-		// Path to Jenkins local project folder for the given perforce workspace
-		def projectLocalPath = PROJECT_LOCAL_PATH
-		// Project Name
-		def projectName = PROJECT_NAME
-		// Name of the perforce workspace use by this pipeline
-		def perforceWorkspaceName = P4_WORKSPACE_NAME
-		// Jenkins credential ID to use the given perforce workspace
-		def perforceCredentialInJenkins = JENKINS_P4_CREDENTIAL
-		// Encoding for the given perforce workspace
-		def perforceUnicodeMode = P4_UNICODE_ENCODING
-		// If not empty, specify which slack channel is use to send message, should start with '#'
-		def optionSlackChannel = SLACK_CHANNEL
-
-		// If true, the perforce workspace will do a force clean
-		def optionFullRebuild = FULL_REBUILD.toBoolean()
-		// Local path where to upload the package
-		def archiveLocalPathRoot = PROJECT_ARCHIVE_PATH
-		// Compilation target for the package, example: "Development"
-		def compilationTarget = COMPILATION_TARGET
-		// Compilation platform for the package, example: "Win64"
-		def compilationPlatform = COMPILATION_PLATFORM
-		// List of maps to include in the package (Note that by default the engine will include some maps)
-		def mapList = ""
-		// If true, will activate the 'pak' step of UE4 packaging
-		def packageUsePAK = PACKAGE_USE_PAK.toBoolean()
-		// If not empty, will try to unshelve from perforce
-		def optionUnshelveCL = UNSHELVE_CHANGELIST
-
-		def packageFolderName = compilationPlatform
 		if(compilationPlatform == "Win64")
 		{
 			packageFolderName = "WindowsNoEditor"

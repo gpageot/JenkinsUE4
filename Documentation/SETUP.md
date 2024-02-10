@@ -183,7 +183,7 @@ Setup slack integration
 Install "slack notification" plugin
 Setup the jenkins integration, see https://plugins.jenkins.io/slack/
 
-## Installation of pipelines in your Jenkins
+## Initial installation of pipelines in your Jenkins
 
 I recommend to start by adding the following pipeline in order to make sure to have proper connection to git and your P4
 - Test/TestSlack.java
@@ -212,3 +212,11 @@ For the replicate pipeline, in order to prevent p4 commands to timeout, make the
 - in Perforce credential setting, click "update" > "Advanced" > change "RPC_SOCKET_SO_TIMEOUT_NICK" to 0
 
 In case of P4 error "Can't clobber writable file" you may want to considerate to set the option "clobber" ON for the P4 workspace that jenkins use
+
+## Installation of compilation pipelines in your Jenkins
+
+First make sure that your project is compiling manually on the computer you use for jenkins
+
+Then setup the CompileUGS pipeline
+
+The Compile pipeline is a legacy pipeline use to make binaries without UGS 

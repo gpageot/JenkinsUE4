@@ -189,43 +189,6 @@ node
 			}
 		}
 
-		// Unnecessary if we use p4publish and if '+w' P4 filetype flag is setup properly for all those files
-		stage('Checkout')
-		{
-			echo "edit engine binaries"
-			def editedFiles = p4.run('edit', 
-				"${engineLocalPath}/Engine/Binaries/Win64/....exe".toString(),
-				"${engineLocalPath}/Engine/Binaries/Win64/....dll".toString(),
-				"${engineLocalPath}/Engine/Binaries/Win64/....pdb".toString(),
-				"${engineLocalPath}/Engine/Binaries/Win64/....target".toString(),
-				"${engineLocalPath}/Engine/Binaries/Win64/....modules".toString(),
-				"${engineLocalPath}/Engine/Binaries/Win64/....version".toString(),
-				"${engineLocalPath}/Engine/Plugins/.../Binaries/Win64/....dll".toString(),
-				"${engineLocalPath}/Engine/Plugins/.../Binaries/Win64/....modules".toString()
-				)
-
-			echo GetListOfClientFile(editedFiles)
-
-			if(engineOnly == false)
-			{
-				echo "edit project binaries"
-				editedFiles = p4.run('edit', 
-					"${projectLocalPath}/${projectName}.uproject".toString(),
-					"${projectLocalPath}/Binaries/Win64/....exe".toString(),
-					"${projectLocalPath}/Binaries/Win64/....dll".toString(),
-					"${projectLocalPath}/Binaries/Win64/....pdb".toString(),
-					"${projectLocalPath}/Binaries/Win64/....target".toString(),
-					"${projectLocalPath}/Binaries/Win64/....modules".toString(),
-					"${projectLocalPath}/Binaries/Win64/....version".toString(),
-					"${projectLocalPath}/Plugins/.../Binaries/Win64/....dll".toString(),
-					"${projectLocalPath}/Plugins/.../Binaries/Win64/....pdb".toString(),
-					"${projectLocalPath}/Plugins/.../Binaries/Win64/....modules".toString()
-					)
-
-				echo GetListOfClientFile(editedFiles)
-			}
-		}
-
 		stage( 'Compile' )
 		{
 			// Compile the game
@@ -241,11 +204,12 @@ node
 			{
 				bat """
 					cd /D \"${engineLocalPath}\\Engine\\Build\\BatchFiles\"
-					Build.bat ${projectTargetName}Editor Win64 Development -Project=\"${projectLocalPath}\\${projectName}.uproject\"
+					RunUAT.bat BuildGraph -Script=Engine/Build/Graph/Examples/BuildEditorAndTools.xml -Target="Submit To Perforce for UGS" -set:ArchiveStream=//streamsDepot/ue5-Binaries
 					"""
+			
 			}
 		}
-
+/*
 		stage('Submit')
 		{
 			// Revert while keeping files in order that the 2nd workspace submit those files
@@ -266,7 +230,7 @@ node
 				rawLabelDesc: perforceLabelDescription,
 				rawLabelName: perforceLabelName
 		}
-
+*/
 		def previousBuildStatus = GetPreviousBuildStatusExceptAborted()
 		def previousBuildSucceed = (previousBuildStatus == 'SUCCESS')
 		def previousBuildFailed = previousBuildSucceed == false
@@ -278,7 +242,7 @@ node
 		def previousBuildStatus = GetPreviousBuildStatusExceptAborted()
 		def previousBuildSucceed = (previousBuildStatus == 'SUCCESS')
 		def buildFirstFail = previousBuildSucceed
-		slackSend color: 'bad', message: "${buildFirstFail?'@here ':''}${env.JOB_NAME} ${env.BUILD_NUMBER} ${engineOnly?"":projectName} ${optionFullRebuild?'rebuild ':'	'}${buildFirstFail?'failed':'still failing'} (${env.BUILD_URL})\n${buildFirstFail?GetChangelistsDesc():''}"
+	//	slackSend color: 'bad', message: "${buildFirstFail?'@here ':''}${env.JOB_NAME} ${env.BUILD_NUMBER} ${engineOnly?"":projectName} ${optionFullRebuild?'rebuild ':'	'}${buildFirstFail?'failed':'still failing'} (${env.BUILD_URL})\n${buildFirstFail?GetChangelistsDesc():''}"
 		throw exception
 	}
 }
