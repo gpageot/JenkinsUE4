@@ -21,6 +21,7 @@
 // COMPILATION_TARGET: Choice(Development, Test)
 // COMPILATION_PLATFORM: Choice( Win64)
 // PACKAGE_USE_PAK: Boolean
+// SPECIFIC_TARGET: String							Optional: Specific target for packaging, useful for specific online subsytem build like EOS 
 // UNSHELVE_CHANGELIST: String						Optional: ID of a shelve changelist to include in the build
 
 // WARNING:
@@ -117,6 +118,9 @@ node
 	def mapList = ""
 	// If true, will activate the 'pak' step of UE4 packaging
 	def packageUsePAK = PACKAGE_USE_PAK.toBoolean()
+	
+	def specificTarget = SPECIFIC_TARGET
+	
 	// If not empty, will try to unshelve from perforce
 	def optionUnshelveCL = UNSHELVE_CHANGELIST
 
@@ -184,7 +188,11 @@ node
 			def packageOptions = ""
 			if(packageUsePAK)
 			{
-				packageOptions = "-pak"
+				packageOptions += " -pak"
+			}
+			if(specificTarget != "")
+			{
+				packageOptions += " -target=${specificTarget}"
 			}
 
 			//  -nocompileeditor
@@ -206,7 +214,12 @@ node
 			}
 
 			def packageLocalPath = "${archiveLocalPathRoot}\\${packageFolderName}"
-			def archiveZipLocalPath = "${archiveLocalPathRoot}\\${projectName}_${compilationTarget}_${compilationPlatform}_${env.BUILD_NUMBER}${optionalUnshelveCL}.zip"
+			def archiveZipLocalPath = "${archiveLocalPathRoot}\\${projectName}_${compilationTarget}_${compilationPlatform}_${env.BUILD_NUMBER}${optionalUnshelveCL}"
+			if(specificTarget != "")
+			{
+				archiveZipLocalPath += "_${specificTarget}"
+			}
+			archiveZipLocalPath += ".zip"
 
 			echo "Zipping to: ${archiveZipLocalPath}"
 			// If ZIP does not work, make sure to have plugin "Pipeline Utility Steps"
