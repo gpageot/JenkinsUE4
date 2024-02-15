@@ -125,7 +125,8 @@ node
 	{
 		if(compilationPlatform == "Win64")
 		{
-			packageFolderName = "WindowsNoEditor"
+			//packageFolderName = "WindowsNoEditor" // ue4 ?
+			packageFolderName = "Windows" // ue5
 		}
 
 		stage('Get perforce')
