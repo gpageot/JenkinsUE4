@@ -186,9 +186,12 @@ node
 				// Need '--force' option as we can't manage prompt
 				// Note that here the dependencies are hard-coded for a minimal "Win64 Editor" build
 				// 2024-02-15: for UGS we actually have to remove those option as we had issue with some module not be part of the precompiled binaries ZIP file
+				// This may freeze as the script ask to change filetype association which require admin rights
 				bat """
 					cd /D \"${engineLocalPath}"
 					rem	Setup.bat --force -exclude=WinRT -exclude=Linux -exclude=Linux32 -exclude=osx64 -exclude=IOS -exclude=HTML5 -exclude=android
+					rem More options:
+					rem ––exclude=osx64 --exclude=osx32 --exclude=TVOS --exclude=Mac --exclude=mac-arm64 --exclude=WinRT --exclude=Linux --exclude=Linux32 --exclude=Linux64 --exclude=Unix --exclude=OpenVR --exclude=GoogleOboe --exclude=GooglePlay --exclude=GoogleGameSDK
 					Setup.bat --force
 					"""
 			}

@@ -23,6 +23,7 @@
 // PACKAGE_USE_PAK: Boolean
 // SPECIFIC_TARGET: String							Optional: Specific target for packaging, useful for specific online subsytem build like EOS 
 // UNSHELVE_CHANGELIST: String						Optional: ID of a shelve changelist to include in the build
+// ADDITIONAL_FILES_TO_ZIP: String					[optional] Path to a local folder containing files to be copied before the package is zip
 
 // WARNING:
 // In order to have the Zip step to work, you need to install the plugin:
@@ -124,6 +125,8 @@ node
 	// If not empty, will try to unshelve from perforce
 	def optionUnshelveCL = UNSHELVE_CHANGELIST
 
+	def additionalFilesPath = ADDITIONAL_FILES_TO_ZIP
+
 	def packageFolderName = compilationPlatform
 	try
 	{
@@ -206,6 +209,15 @@ node
 		stage( 'Zip' )
 		{
 			// Optional: Zip the package in order to speed up file transfer over network
+			
+			if(additionalFilesPath != "")
+			{
+				// /K           Copies attributes. Normal Xcopy will reset read-only attributes.
+				// /Y           Suppresses prompting to confirm you want to overwrite an existing destination file.
+				bat """
+					xcopy /s "${additionalFilesPath}" "${archiveLocalPathRoot}\\${packageFolderName}" /K /Y
+					"""
+			}
 
 			def optionalUnshelveCL = ""
 			if(optionUnshelveCL != "")
@@ -224,6 +236,16 @@ node
 			echo "Zipping to: ${archiveZipLocalPath}"
 			// If ZIP does not work, make sure to have plugin "Pipeline Utility Steps"
 		    zip dir: "${packageLocalPath}", glob: '', zipFile: "${archiveZipLocalPath}"
+
+			// clean up after, in case the content of the folder change, or the option is changed
+			if(additionalFilesPath != "")
+			{
+				def localFilesFilter = "${additionalFilesPath}\\*.*"
+				bat """
+					cd "${archiveLocalPathRoot}\\${packageFolderName}"
+					for /f "delims=|" %%f in ('dir /b ${localFilesFilter}') do del "%%f"
+					"""
+			}
 		}
 
 		stage('Cleanup')
