@@ -29,6 +29,9 @@
 // TODO: Add to P4 tips: If you don't see the virtual stream you are creating, make sure you have the right to your main stream root folder
 
 
+// If you encounter an issue with unrealEditor.modules not matching the dll in the zip files (for example UnrealEditor-MetalFormat)
+// it may be cause by an old engine setup, so delete your Binaries/Win64 and re get from perforce, then re-run this pipeline (or use the option FULL_REBUILD)
+
 // Need permission for:
 // 
 // org.jenkinsci.plugins.p4.groovy.P4Groovy
@@ -152,6 +155,7 @@ node
 			}
 			else
 			{
+				// If you encounter an issue of type "Can't clobber writable file", make sure the p4 workspace was created with CLOBBER=TRUE
 				populateOption = syncOnly(force: perforceForceSync, have: true, modtime: true, parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'], pin: '', quiet: true, revert: true)
 			}
 
@@ -211,11 +215,12 @@ node
 		stage( 'Move to binaries workspace' )
 		{
 			// As move command does not want to overwrite the read only file, go through multiple command
+			// Use 'copy' in place of 'move' to keep file for debugging
 			bat """
 				cd /D \"${engineLocalPath}\\"
 				del /f "${binariesZipLocalFolder}\\${binariesZipFileName}"
 				IF NOT ERRORLEVEL 1 ECHO delete successful
-				move /y "LocalBuilds\\ArchiveForUGS\\Perforce\\Unknown-${projectTargetName}Editor.zip" "${binariesZipLocalFolder}\\${binariesZipFileName}"
+				copy /y "LocalBuilds\\ArchiveForUGS\\Perforce\\Unknown-${projectTargetName}Editor.zip" "${binariesZipLocalFolder}\\${binariesZipFileName}"
 				IF NOT ERRORLEVEL 1 ECHO move successful
 				"""
 		}
