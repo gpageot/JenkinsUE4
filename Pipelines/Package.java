@@ -32,6 +32,7 @@
 // Need permission for:
 //
 // org.codehaus.groovy.runtime.DefaultGroovyMethods deleteDir java.io.File
+// org.jenkinsci.plugins.p4.changes.P4ChangeEntry getChangeNumber
 
 // TODO: 
 // P4_LABEL_NAME: String
