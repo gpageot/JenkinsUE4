@@ -25,6 +25,10 @@
 // P4_LABEL_NAME: String							Name of the label added on succesful compilation
 // P4_LABEL_DESC: String							Description of the label added on successful compilation
 // TARGET_PLATFORM: String							[optional] List of targeted platform separated by semicolon
+// SETUP_ENGINE_OPTION: String						[optional] List of option to add to the engine setup batch (useful to remove unused platform)
+//													Here an example for a minimal "Win64 Editor" build
+//													--exclude=osx32 --exclude=TVOS --exclude=Mac --exclude=mac-arm64 --exclude=WinRT --exclude=Linux --exclude=Linux32 --exclude=Linux64 --exclude=Unix --exclude=OpenVR --exclude=GoogleOboe --exclude=GooglePlay --exclude=GoogleGameSDK
+//													You may need to adjust this if you have issue with some module not be part of the precompiled binaries ZIP file but part of the UnrealEditor.modules
 
 // TODO: Add to P4 tips: If you don't see the virtual stream you are creating, make sure you have the right to your main stream root folder
 
@@ -138,6 +142,7 @@ node
 	def perforceLabelName = P4_LABEL_NAME
 	def perforceLabelDescription = P4_LABEL_DESC
 	def targetPlatforms = "Win64"
+	def setupOptions = SETUP_ENGINE_OPTION
 	if(TARGET_PLATFORM != "")
 	{
 		targetPlatforms = TARGET_PLATFORM
@@ -179,20 +184,15 @@ node
 			echo GetListOfClientFile(editedFiles)
 
 			// We need to use double quote for batch path in case engine path contains space
-			// /D				Change drive at same time as current folder		
+			// /D				Change drive at same time as current folder
 
 			if(setupEngine)
 			{
 				// Need '--force' option as we can't manage prompt
-				// Note that here the dependencies are hard-coded for a minimal "Win64 Editor" build
-				// 2024-02-15: for UGS we actually have to remove those option as we had issue with some module not be part of the precompiled binaries ZIP file
 				// This may freeze as the script ask to change filetype association which require admin rights
 				bat """
 					cd /D \"${engineLocalPath}"
-					rem	Setup.bat --force -exclude=WinRT -exclude=Linux -exclude=Linux32 -exclude=osx64 -exclude=IOS -exclude=HTML5 -exclude=android
-					rem More options:
-					rem ––exclude=osx64 --exclude=osx32 --exclude=TVOS --exclude=Mac --exclude=mac-arm64 --exclude=WinRT --exclude=Linux --exclude=Linux32 --exclude=Linux64 --exclude=Unix --exclude=OpenVR --exclude=GoogleOboe --exclude=GooglePlay --exclude=GoogleGameSDK
-					Setup.bat --force
+					Setup.bat --force ${setupOptions}
 					"""
 			}
 		}
