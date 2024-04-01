@@ -27,8 +27,9 @@
 // TARGET_PLATFORM: String							[optional] List of targeted platform separated by semicolon
 // SETUP_ENGINE_OPTION: String						[optional] List of option to add to the engine setup batch (useful to remove unused platform)
 //													Here an example for a minimal "Win64 Editor" build
-//													--exclude=osx32 --exclude=TVOS --exclude=Mac --exclude=mac-arm64 --exclude=WinRT --exclude=Linux --exclude=Linux32 --exclude=Linux64 --exclude=Unix --exclude=OpenVR --exclude=GoogleOboe --exclude=GooglePlay --exclude=GoogleGameSDK
+//													--force --exclude=osx32 --exclude=TVOS --exclude=Mac --exclude=mac-arm64 --exclude=WinRT --exclude=Linux --exclude=Linux32 --exclude=Linux64 --exclude=Unix --exclude=OpenVR --exclude=GoogleOboe --exclude=GooglePlay --exclude=GoogleGameSDK
 //													You may need to adjust this if you have issue with some module not be part of the precompiled binaries ZIP file but part of the UnrealEditor.modules
+//													--force can be replaced by --prompt
 
 // TODO: Add to P4 tips: If you don't see the virtual stream you are creating, make sure you have the right to your main stream root folder
 
@@ -121,9 +122,9 @@ node
 		projectTargetName = PROJECT_TARGET_NAME
 	}
 	def binariesZipLocalFolder = BINARIES_ZIP_LOCAL_FOLDER
-			def binariesZipFileName	= BINARIES_FILE_NAME
+	def binariesZipFileName	= BINARIES_FILE_NAME
 	def additionalBuildGraphOption = ADDITIONAL_BUILDGRAPH_OPTION
-	
+
 	// Name of the perforce workspace use by this pipeline
 	def perforceWorkspaceName = P4_WORKSPACE_NAME
 	// Name of the perforce workspace use by this pipeline to submit files to perforce
@@ -189,10 +190,11 @@ node
 			if(setupEngine)
 			{
 				// Need '--force' option as we can't manage prompt
-				// This may freeze as the script ask to change filetype association which require admin rights
+				// Note that this may freeze as the script ask to change filetype association which require admin rights
+				// Note that this command and take a long time at it will download GitDependencies from internet
 				bat """
 					cd /D \"${engineLocalPath}"
-					Setup.bat --force ${setupOptions}
+					Setup.bat ${setupOptions}
 					"""
 			}
 		}
@@ -240,8 +242,10 @@ node
 			//echo "Formatted CL number: ${clNumberAsDigit}"
 			
 			// IMPORTANT: for UGS to work the P4 comment should start with "[CL 00000000]" 00000000 being the p4 version used to compile the binaries
+			// "purge" limit number of revision kept for the zip file
+			// "delete" Propagate deletes
 			p4publish credential: perforceCredentialInJenkins,
-				publish: submit(delete: false, description: "[${clNumberAsDigit}] ${env.JOB_NAME} ${env.BUILD_NUMBER} ${optionFullRebuild?'rebuild':''}".toString(), onlyOnSuccess: false, purge: '', reopen: false),
+				publish: submit(delete: true, description: "[${clNumberAsDigit}] ${env.JOB_NAME} ${env.BUILD_NUMBER} ${optionFullRebuild?'rebuild':''}".toString(), onlyOnSuccess: false, purge: '32', reopen: false),
 				workspace: staticSpec(charset: perforceUnicodeMode, name: perforceWorkspaceNameForPublish, pinHost: false)
 		}
 
@@ -253,6 +257,7 @@ node
 	}
 	catch (exception)
 	{
+		// TODO : cleanup possible remaining changelist in binaries workspace
 		def previousBuildStatus = GetPreviousBuildStatusExceptAborted()
 		def previousBuildSucceed = (previousBuildStatus == 'SUCCESS')
 		def buildFirstFail = previousBuildSucceed
