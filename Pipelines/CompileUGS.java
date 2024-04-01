@@ -27,9 +27,9 @@
 // TARGET_PLATFORM: String							[optional] List of targeted platform separated by semicolon
 // SETUP_ENGINE_OPTION: String						[optional] List of option to add to the engine setup batch (useful to remove unused platform)
 //													Here an example for a minimal "Win64 Editor" build
-//													--force --exclude=osx32 --exclude=TVOS --exclude=Mac --exclude=mac-arm64 --exclude=WinRT --exclude=Linux --exclude=Linux32 --exclude=Linux64 --exclude=Unix --exclude=OpenVR --exclude=GoogleOboe --exclude=GooglePlay --exclude=GoogleGameSDK
+//													--prompt --exclude=osx32 --exclude=TVOS --exclude=Mac --exclude=mac-arm64 --exclude=WinRT --exclude=Linux --exclude=Linux32 --exclude=Linux64 --exclude=Unix --exclude=OpenVR --exclude=GoogleOboe --exclude=GooglePlay --exclude=GoogleGameSDK
 //													You may need to adjust this if you have issue with some module not be part of the precompiled binaries ZIP file but part of the UnrealEditor.modules
-//													--force can be replaced by --prompt
+//													You can replace "--prompt" by "--force" but "---prompt" seems to work on build machine
 
 // TODO: Add to P4 tips: If you don't see the virtual stream you are creating, make sure you have the right to your main stream root folder
 
