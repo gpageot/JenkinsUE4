@@ -101,7 +101,7 @@ def GetPreviousBuildStatusExceptAborted()
 	while(previousBuild != null)
 	{
 		def status = previousBuild.getResult().toString()
-		if(status != 'ABORTED')
+		if((status != 'ABORTED') && (status != 'NOT_BUILT'))
 			return status
 
 		previousBuild = previousBuild.getPreviousBuild()
