@@ -55,6 +55,7 @@
 //
 // ERROR: Unable to find installation of PDBCOPY.EXE, which is required to strip symbols. This tool is included as part of the 'Windows Debugging Tools' component of the Windows 10 SDK (https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk).
 
+import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
 
 def GetListOfClientFile(P4CommandResult)
 {
@@ -255,7 +256,11 @@ node
 		def buildFixed = previousBuildFailed
 		slackSend color: 'good', message: "${buildFixed?'@here ':''}${env.JOB_NAME} ${env.BUILD_NUMBER} ${projectName} ${optionFullRebuild?'rebuild ':''}${buildFixed?'fixed':'succeed'} (${env.BUILD_URL})"
 	}
-	catch (exception)
+	catch (FlowInterruptedException e)
+	{
+		echo "Job was interupt, ignoring exception"
+	}
+	catch (Exception e)
 	{
 		// TODO : cleanup possible remaining changelist in binaries workspace
 		def previousBuildStatus = GetPreviousBuildStatusExceptAborted()
