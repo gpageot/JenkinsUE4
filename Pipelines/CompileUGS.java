@@ -226,7 +226,10 @@ node
 				cd /D \"${engineLocalPath}\\"
 				del /f "${binariesZipLocalFolder}\\${binariesZipFileName}"
 				IF NOT ERRORLEVEL 1 ECHO delete successful
-				copy /y "LocalBuilds\\ArchiveForUGS\\Perforce\\Unknown-${projectTargetName}Editor.zip" "${binariesZipLocalFolder}\\${binariesZipFileName}"
+				//UE5.3
+				//copy /y "LocalBuilds\\ArchiveForUGS\\Perforce\\Unknown-${projectTargetName}Editor.zip" "${binariesZipLocalFolder}\\${binariesZipFileName}"
+				//UE5.4
+				copy /y "LocalBuilds\\ArchiveForUGS-Perforce\\Unknown-${projectTargetName}Editor.zip" "${binariesZipLocalFolder}\\${binariesZipFileName}"
 				IF NOT ERRORLEVEL 1 ECHO move successful
 				"""
 		}
