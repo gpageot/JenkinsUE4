@@ -20,16 +20,16 @@
 // JENKINS_P4_CREDENTIAL: String					Add a credential with: Credentials > Jenkin (Global) > Global credentials > Add Credentials > Perforce Password Credential
 // P4_UNICODE_ENCODING: String						If server if not set to support unicode, set it to "auto"
 // P4_FORCE_SYNC: Boolean							If we force P4 sync, useful in case some file are left writable
-// FULL_REBUILD: Boolean							If true, the perforce workspace will do a force clean
+// FULL_REBUILD: Boolean							If true, the perforce workspace will do a force clean. Will automaticly set SETUP_ENGINE=TRUE
 // SETUP_ENGINE: Boolean							If true, the engine setup batch will be called
 // P4_LABEL_NAME: String							Name of the label added on succesful compilation
 // P4_LABEL_DESC: String							Description of the label added on successful compilation
 // TARGET_PLATFORM: String							[optional] List of targeted platform separated by semicolon
 // SETUP_ENGINE_OPTION: String						[optional] List of option to add to the engine setup batch (useful to remove unused platform)
 //													Here an example for a minimal "Win64 Editor" build
-//													--prompt --exclude=osx32 --exclude=TVOS --exclude=Mac --exclude=mac-arm64 --exclude=WinRT --exclude=Linux --exclude=Linux32 --exclude=Linux64 --exclude=Unix --exclude=OpenVR --exclude=GoogleOboe --exclude=GooglePlay --exclude=GoogleGameSDK
+//													--force --exclude=osx32 --exclude=TVOS --exclude=Mac --exclude=mac-arm64 --exclude=WinRT --exclude=Linux --exclude=Linux32 --exclude=Linux64 --exclude=Unix --exclude=OpenVR --exclude=GoogleOboe --exclude=GooglePlay --exclude=GoogleGameSDK
 //													You may need to adjust this if you have issue with some module not be part of the precompiled binaries ZIP file but part of the UnrealEditor.modules
-//													You can replace "--prompt" by "--force" but "---prompt" seems to work on build machine
+//													You can replace "--force" by "--prompt", "--prompt" used to work on build machine, but now need to use force?
 
 // TODO: Add to P4 tips: If you don't see the virtual stream you are creating, make sure you have the right to your main stream root folder
 
@@ -140,6 +140,9 @@ node
 	def optionFullRebuild = FULL_REBUILD.toBoolean()
 	// If true, the engine setup batch will be called
 	def setupEngine = SETUP_ENGINE.toBoolean()
+
+	// When using full rebuilt, we need to also setupEngine, as p4 only store the engine without setup.bat files
+	setupEngine = setupEngine || optionFullRebuild
 
 	def perforceLabelName = P4_LABEL_NAME
 	def perforceLabelDescription = P4_LABEL_DESC
